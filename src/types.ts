@@ -1,24 +1,32 @@
-import {MutableRefObject, ReactElement} from "react";
+import { MutableRefObject, ReactElement } from 'react';
 
 export interface DragContainerProps {
-    children: ReactElement[];
+	children: ReactElement[];
 }
 
 export interface Coords {
-    x: number,
-    y: number,
-    width: number,
-    height: number
+	x: number;
+	y: number;
+	width: number;
+	height: number;
 }
 
-export type ChildrenStyle = Record<string, { gridRow: number, gridColumn: number }>;
-export type TempStyle = Record<string, { gridRow?: number, gridColumn: number }>;
+export type ChildrenStyle = Record<string, { gridRow: number; gridColumn: number }>;
+export type TempStyle = Record<string, { gridRow?: number; gridColumn: number }>;
 
 export interface DraggableProps {
-    children: ReactElement;
-    getCoords: (arg0: string, arg1: {x: number, y: number, width: number, height: number}) => void;
-    startStyle: ChildrenStyle;
-    childrenStyle: ChildrenStyle;
-    ghostImage: MutableRefObject<HTMLDivElement | null>;
-    columnWidth: number;
+	children: ReactElement;
+	getCoords: (arg0: string, arg1: { x: number; y: number; width: number; height: number }) => void;
+	startLayout: ChildrenStyle;
+	childrenStyle: ChildrenStyle;
+	ghostImage: MutableRefObject<HTMLDivElement | null>;
+	columnWidth: number;
+	rowHeight: number;
+	onDrag(el: string, status: DragStatus): void;
+}
+
+export enum DragStatus {
+	START = 'start',
+	END = 'end',
+	CANCEL = 'cancel',
 }
