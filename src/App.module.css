@@ -13,8 +13,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 20px;
     background: rgba(70, 130, 180, 0.8);
     border-radius: 5px;
-    color: #ccc
+    color: #ccc;
+    font-size: 20px;
 }

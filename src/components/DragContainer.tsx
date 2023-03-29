@@ -1,22 +1,18 @@
-import React, { Children, useRef } from 'react';
+import React, { Children } from 'react';
 import { Draggable } from './Draggable';
 import { DragContainerProps } from '../types';
 import { useLayout } from '../hooks/useLayout';
 
-export const DragContainer = ({ children }: DragContainerProps) => {
-	const ghostImage = useRef<HTMLDivElement>(null);
-
-	const { layout, startLayout, dragHandlers, getCoords, columnWidth, rowHeight } = useLayout();
+export const DragContainer = ({ children, className }: DragContainerProps) => {
+	const { layout, startLayout, dragHandlers, columnWidth, rowHeight, ref } = useLayout();
 
 	return (
-		<>
+		<div className={className} ref={ref}>
 			{Children.map(children, child => {
 				return (
 					<Draggable
-						getCoords={getCoords}
 						startLayout={startLayout}
 						childrenStyle={layout}
-						ghostImage={ghostImage}
 						columnWidth={columnWidth}
 						rowHeight={rowHeight}
 						onDrag={dragHandlers}
@@ -25,6 +21,6 @@ export const DragContainer = ({ children }: DragContainerProps) => {
 					</Draggable>
 				);
 			})}
-		</>
+		</div>
 	);
 };

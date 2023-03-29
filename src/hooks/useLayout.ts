@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { ChildrenStyle, Coords, DragStatus } from '../types';
+import { ChildrenStyle, DragStatus } from '../types';
 import { getInitialChildrenStyle } from '../utils/getInitialChildrenStyle';
 
 export const useLayout = () => {
@@ -8,25 +8,34 @@ export const useLayout = () => {
 	const [columnWidth, setColumnWidth] = useState<number>(0);
 	const [rowHeight, setRowHeight] = useState<number>(0);
 
-	const coordsArray = useRef<{ id: string; coords: Coords }[]>([]);
+	const ref = useRef<HTMLDivElement>(null);
 	const tiles = useRef<{ start: string | ''; end: string | '' }>({ start: '', end: '' });
 
 	useLayoutEffect(() => {
-		if (!coordsArray.current.length) return;
-		const { current } = coordsArray;
-		const { style, width, height } = getInitialChildrenStyle(current);
+		if (!ref.current) return;
+		const resizeCallback = () => {
+			const childCoords = Array.from(ref.current?.children || []).map(child => ({
+				id: child.id,
+				coords: child.getBoundingClientRect(),
+			}));
+			const { style, width, height } = getInitialChildrenStyle(childCoords);
+			setStartLayout(style as ChildrenStyle);
+			setColumnWidth(width);
+			setRowHeight(height);
+		};
 
-		setStartLayout(style as ChildrenStyle);
-		setColumnWidth(width);
-		setRowHeight(height);
+		const observer = new ResizeObserver(resizeCallback);
+		observer.observe(ref.current);
+
+		return () => {
+			if (ref.current) observer.unobserve(ref.current);
+		};
 	}, []);
 
 	useLayoutEffect(
 		() => setLayout(prevState => (Object.keys(prevState).length ? prevState : startLayout)),
 		[startLayout]
 	);
-
-	const getCoords = (id: string, coords: Coords) => coordsArray.current.push({ id, coords });
 
 	const dragHandlers = (element: string, status: DragStatus) => {
 		if (status === DragStatus.CANCEL) {
@@ -50,5 +59,5 @@ export const useLayout = () => {
 			});
 	};
 
-	return { layout, startLayout, dragHandlers, getCoords, columnWidth, rowHeight };
+	return { layout, startLayout, dragHandlers, columnWidth, rowHeight, ref };
 };

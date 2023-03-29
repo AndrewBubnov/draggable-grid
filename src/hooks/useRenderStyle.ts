@@ -14,6 +14,7 @@ interface ReturnType {
 	[GRID_COLUMN]: number;
 	[GRID_ROW]: number;
 	[DELTA_X]: string;
+	[DELTA_Y]: string;
 }
 
 export const useRenderStyle = ({
