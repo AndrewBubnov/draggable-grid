@@ -4,12 +4,9 @@ export const getInitialChildrenStyle = (array: { id: string; coords: Coords }[])
 	const sortedColumns = array.sort((a, b) => a.coords.x - b.coords.x);
 	let currentX = sortedColumns[0].coords.x;
 	let currentGridColumn = 1;
-	let height = 0;
-	let width = 0;
 	let style: TempStyle = {};
 	sortedColumns.forEach(col => {
 		if (col.coords.x > currentX) {
-			width = col.coords.x - currentX;
 			currentX = col.coords.x;
 			currentGridColumn = currentGridColumn + 1;
 		}
@@ -23,7 +20,6 @@ export const getInitialChildrenStyle = (array: { id: string; coords: Coords }[])
 	let currentGridRow = 1;
 	sortedRaws.forEach(raw => {
 		if (raw.coords.y > currentY) {
-			height = raw.coords.y - currentY;
 			currentY = raw.coords.y;
 			currentGridRow = currentGridRow + 1;
 		}
@@ -35,5 +31,5 @@ export const getInitialChildrenStyle = (array: { id: string; coords: Coords }[])
 			},
 		};
 	});
-	return { style, width, height };
+	return style;
 };

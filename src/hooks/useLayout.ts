@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { ChildrenStyle, DragStatus } from '../types';
 import { getInitialChildrenStyle } from '../utils/getInitialChildrenStyle';
+import { GAP, TEMPLATE_COLUMNS, TEMPLATE_ROWS } from '../constants';
 
 export const useLayout = () => {
 	const [layout, setLayout] = useState<ChildrenStyle>({} as ChildrenStyle);
@@ -13,17 +14,26 @@ export const useLayout = () => {
 
 	useLayoutEffect(() => {
 		if (!ref.current) return;
+		const childCoords = Array.from(ref.current?.children || []).map(child => ({
+			id: child.id,
+			coords: child.getBoundingClientRect(),
+		}));
+		const initLayout = getInitialChildrenStyle(childCoords) as ChildrenStyle;
+		setStartLayout(initLayout);
+		setLayout(initLayout);
+	}, []);
+
+	useLayoutEffect(() => {
+		if (!ref.current) return;
 		const { current } = ref;
 
 		const resizeCallback = () => {
-			const childCoords = Array.from(current?.children || []).map(child => ({
-				id: child.id,
-				coords: child.getBoundingClientRect(),
-			}));
-			const { style, width, height } = getInitialChildrenStyle(childCoords);
-			setStartLayout(style as ChildrenStyle);
-			setColumnWidth(width);
-			setRowHeight(height);
+			const computed = getComputedStyle(current);
+			const gap = parseFloat(computed.getPropertyValue(GAP));
+			const column = parseFloat(computed.getPropertyValue(TEMPLATE_COLUMNS));
+			const row = parseFloat(computed.getPropertyValue(TEMPLATE_ROWS));
+			setColumnWidth(column + gap);
+			setRowHeight(row + gap);
 		};
 
 		const observer = new ResizeObserver(resizeCallback);
@@ -31,11 +41,6 @@ export const useLayout = () => {
 
 		return () => observer.unobserve(current);
 	}, []);
-
-	useLayoutEffect(
-		() => setLayout(prevState => (Object.keys(prevState).length ? prevState : startLayout)),
-		[startLayout]
-	);
 
 	const dragHandlers = (element: string, status: DragStatus) => {
 		if (status === DragStatus.CANCEL) {
