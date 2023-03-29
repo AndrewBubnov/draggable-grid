@@ -5,12 +5,12 @@ import { GAP, TEMPLATE_COLUMNS, TEMPLATE_ROWS } from '../constants';
 
 export const useLayout = () => {
 	const [layout, setLayout] = useState<ChildrenStyle>({} as ChildrenStyle);
-	const [startLayout, setStartLayout] = useState<ChildrenStyle>({} as ChildrenStyle);
 	const [columnWidth, setColumnWidth] = useState<number>(0);
 	const [rowHeight, setRowHeight] = useState<number>(0);
 
-	const ref = useRef<HTMLDivElement>(null);
+	const startLayout = useRef<ChildrenStyle>({} as ChildrenStyle);
 	const tiles = useRef<{ start: string | ''; end: string | '' }>({ start: '', end: '' });
+	const ref = useRef<HTMLDivElement>(null);
 
 	useLayoutEffect(() => {
 		if (!ref.current) return;
@@ -19,7 +19,7 @@ export const useLayout = () => {
 			coords: child.getBoundingClientRect(),
 		}));
 		const initLayout = getInitialChildrenStyle(childCoords) as ChildrenStyle;
-		setStartLayout(initLayout);
+		startLayout.current = initLayout;
 		setLayout(initLayout);
 	}, []);
 
@@ -64,5 +64,5 @@ export const useLayout = () => {
 			});
 	};
 
-	return { layout, startLayout, dragHandlers, columnWidth, rowHeight, ref };
+	return { layout, startLayout: startLayout.current, dragHandlers, columnWidth, rowHeight, ref };
 };
