@@ -1,3 +1,3 @@
 React component to make CSS-grid markdown items animated draggable.
-Just wrap items inside the grid container in the DragContainer component and enjoy 
-smooth animation.
+Just wrap grid items in the DragContainer component instead your regular grid
+container, pass it a grid className and enjoy smooth drag animation.

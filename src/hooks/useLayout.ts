@@ -13,8 +13,10 @@ export const useLayout = () => {
 
 	useLayoutEffect(() => {
 		if (!ref.current) return;
+		const { current } = ref;
+
 		const resizeCallback = () => {
-			const childCoords = Array.from(ref.current?.children || []).map(child => ({
+			const childCoords = Array.from(current?.children || []).map(child => ({
 				id: child.id,
 				coords: child.getBoundingClientRect(),
 			}));
@@ -25,11 +27,9 @@ export const useLayout = () => {
 		};
 
 		const observer = new ResizeObserver(resizeCallback);
-		observer.observe(ref.current);
+		observer.observe(current);
 
-		return () => {
-			if (ref.current) observer.unobserve(ref.current);
-		};
+		return () => observer.unobserve(current);
 	}, []);
 
 	useLayoutEffect(
