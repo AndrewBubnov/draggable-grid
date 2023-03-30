@@ -19,7 +19,7 @@
     font-size: 20px;
 }
 
-.activeInvestigations {
+.active {
     grid-column: 1 / span 3;
     grid-row: 1 / span 1;
 }

@@ -1,11 +1,11 @@
-import { cloneElement, useRef, DragEvent } from 'react';
-import { nanoid } from 'nanoid';
+import { cloneElement, useRef, DragEvent, useId } from 'react';
 import { DraggableProps, DragStatus } from '../types';
 import { useRenderStyle } from '../hooks/useRenderStyle';
 import styles from './Draggable.module.css';
 
 export const Draggable = ({ children, startLayout, childrenStyle, columnWidth, rowHeight, onDrag }: DraggableProps) => {
-	const id = useRef(nanoid());
+	const firstId = useId();
+	const id = useRef(firstId);
 	const ref = useRef<HTMLDivElement>(null);
 
 	const renderStyle = useRenderStyle({

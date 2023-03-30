@@ -4,22 +4,50 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 	const { width: startWidth, height: startHeight, row: startRow, column: startColumn } = state[start];
 	const { width: endWidth, height: endHeight, row: endRow, column: endColumn } = state[end];
 
-	// Find is elements are dragged within same row
 	const isSameRow = startRow === endRow;
 	const isSameColumn = startColumn === endColumn;
-	// Appoint main and secondary (cross) axis depended on drag direction (row / column)
+
 	const [main, cross] = isSameRow ? [Location.ROW, Location.COLUMN] : [Location.COLUMN, Location.ROW];
-	// Appoint size parameter and its value of start and end element
+
 	const [size, startSize, endSize, crossSize] = isSameRow
 		? [Location.WIDTH, startWidth, endWidth, Location.HEIGHT]
 		: [Location.HEIGHT, startHeight, endHeight, Location.WIDTH];
-	// Find set of elements that could change positions (current row  / column)
-	const containerElements = (Object.keys(state) as Array<keyof typeof state>).filter(
-		el => state[el][main] === state[end][main]
-	);
+
 	const { [start]: startElement, [end]: endElement } = state;
 
 	if (startElement[crossSize] < endElement[crossSize]) return state;
+
+	const keys = Object.keys(state) as Array<keyof typeof state>;
+
+	if (startElement[crossSize] > endElement[crossSize]) {
+		const crossElements = keys.filter(el => state[el][cross] === state[end][cross]);
+		const allTargetElements = crossElements.slice(crossElements.indexOf(end));
+
+		const target: string[] = [];
+		let sum = 0;
+		allTargetElements.forEach(el => {
+			if (sum < state[start][Location.WIDTH]) {
+				sum = sum + state[el][Location.WIDTH];
+				target.push(el);
+			}
+		});
+		const allTargetWidth = target.reduce((acc, cur) => acc + state[cur][Location.WIDTH], 0);
+		if (allTargetWidth < state[start][Location.WIDTH]) return state;
+		let sumCounter = 0;
+		return {
+			...state,
+			[start]: {
+				...endElement,
+				[Location.WIDTH]: startElement[Location.WIDTH],
+				[Location.HEIGHT]: startElement[Location.HEIGHT],
+			},
+			...target.reduce((acc, cur) => {
+				acc[cur] = { ...state[cur], [cross]: startElement[cross], [main]: startElement[main] + sumCounter };
+				sumCounter = sumCounter + state[cur][Location.WIDTH];
+				return acc;
+			}, {} as Layout),
+		};
+	}
 
 	if (!isSameRow && !isSameColumn) {
 		return {
@@ -30,6 +58,8 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 	}
 
 	const fromRight = state[start][cross] > state[end][cross];
+
+	const containerElements = keys.filter(el => state[el][main] === state[end][main]);
 
 	if (fromRight) {
 		return {
@@ -48,10 +78,8 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 					};
 				}
 				if (element[cross] < endElement[cross] || element[cross] > startElement[cross]) {
-					// elements not between start and end
 					return { ...acc, [el]: state[el] };
 				}
-				// elements between start and end
 				return { ...acc, [el]: { ...state[el], [cross]: element[cross] + startSize - endSize } };
 			}, {} as Layout),
 		};

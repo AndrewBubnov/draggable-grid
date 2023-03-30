@@ -4,7 +4,7 @@ import { DragContainer } from './components/DragContainer';
 function App() {
 	return (
 		<DragContainer className={styles.grid}>
-			<div className={`${styles.item} ${styles.activeInvestigations}`}>1</div>
+			<div className={`${styles.item} ${styles.active}`}>1</div>
 			<div className={styles.item}>2</div>
 			<div className={styles.item}>3</div>
 			<div className={styles.item}>4</div>
