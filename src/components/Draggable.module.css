@@ -1,13 +1,9 @@
 root {
 	--delta-x: '';
 	--delta-y: '';
-	--grid-column: '';
-	--grid-row: '';
 }
 
 .tile {
-	grid-column: var(--grid-column);
-	grid-row: var(--grid-row);
 	transform: translate(var(--delta-x), var(--delta-y));
 	transition: transform 0.3s;
 }
