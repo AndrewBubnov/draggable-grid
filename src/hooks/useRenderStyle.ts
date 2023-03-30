@@ -1,19 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { DELTA_X, DELTA_Y } from '../constants';
-import { Child } from '../types';
-
-interface UseRenderStyle {
-	startLayout: Child;
-	childrenStyle: Child;
-	columnWidth: number;
-	rowHeight: number;
-	id: string;
-}
-
-interface ReturnType {
-	[DELTA_X]: string;
-	[DELTA_Y]: string;
-}
+import { Initial, Location, UseRenderStyle, UseRenderStyleReturn } from '../types';
 
 export const useRenderStyle = ({
 	startLayout,
@@ -21,16 +8,16 @@ export const useRenderStyle = ({
 	columnWidth,
 	rowHeight,
 	id,
-}: UseRenderStyle): ReturnType => {
-	const [initial, setInitial] = useState<{ gridRow: number; gridColumn: number } | null>(null);
+}: UseRenderStyle): UseRenderStyleReturn => {
+	const [initial, setInitial] = useState<Initial>(null);
 
 	useEffect(() => setInitial(prevState => (prevState ? prevState : startLayout[id])), [startLayout]);
 
 	return useMemo(() => {
-		const startColumn = initial?.gridColumn || 0;
-		const startRow = initial?.gridRow || 0;
-		const currentColumn = childrenStyle[id]?.gridColumn;
-		const currentRow = childrenStyle[id]?.gridRow;
+		const startColumn = initial?.[Location.COLUMN] || 0;
+		const startRow = initial?.[Location.ROW] || 0;
+		const currentColumn = childrenStyle[id]?.[Location.COLUMN];
+		const currentRow = childrenStyle[id]?.[Location.ROW];
 
 		return {
 			[DELTA_X]: `${(currentColumn - startColumn) * columnWidth}px`,

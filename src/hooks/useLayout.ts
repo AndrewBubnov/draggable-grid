@@ -1,28 +1,32 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Child, DragStatus } from '../types';
+import { Layout, DragStatus } from '../types';
 import { getInitialChildrenStyle } from '../utils/getInitialChildrenStyle';
-import { AUTO, GAP, SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS } from '../constants';
+import { AUTO, GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN } from '../constants';
+import { recalculatePositions } from '../utils/recalculatePositions';
 
 export const useLayout = () => {
-	const [layout, setLayout] = useState<Child>({} as Child);
+	const [layout, setLayout] = useState<Layout>({} as Layout);
 	const [columnWidth, setColumnWidth] = useState<number>(0);
 	const [rowHeight, setRowHeight] = useState<number>(0);
 
-	const startLayout = useRef<Child>({} as Child);
+	const startLayout = useRef<Layout>({} as Layout);
 	const tiles = useRef<{ start: string | ''; end: string | '' }>({ start: '', end: '' });
 	const ref = useRef<HTMLDivElement>(null);
 
 	useLayoutEffect(() => {
 		if (!ref.current) return;
 		const childCoords = Array.from(ref.current?.children || []).map(child => {
-			const computedWidth = getComputedStyle(child).getPropertyValue(SPAN);
+			const computed = getComputedStyle(child);
+			const computedWidth = computed.getPropertyValue(COLUMN_SPAN);
+			const computedHeight = computed.getPropertyValue(ROW_SPAN);
 			return {
 				id: child.id,
 				coords: child.getBoundingClientRect(),
 				width: computedWidth === AUTO ? 1 : +computedWidth.split(' ')[1],
+				height: computedHeight === AUTO ? 1 : +computedHeight.split(' ')[1],
 			};
 		});
-		const initLayout = getInitialChildrenStyle(childCoords) as Child;
+		const initLayout = getInitialChildrenStyle(childCoords) as Layout;
 		startLayout.current = initLayout;
 		setLayout(initLayout);
 	}, []);
@@ -57,15 +61,7 @@ export const useLayout = () => {
 			tiles.current = { ...tiles.current, end: element };
 		}
 		const { start, end } = tiles.current;
-		if (start && end)
-			setLayout(prevState => {
-				const { [start]: startElement, [end]: endElement } = prevState;
-				return {
-					...prevState,
-					[start]: endElement,
-					[end]: startElement,
-				};
-			});
+		if (start && end) setLayout(prevState => recalculatePositions(prevState, start, end));
 	};
 
 	return { layout, startLayout: startLayout.current, dragHandlers, columnWidth, rowHeight, ref };

@@ -1,10 +1,10 @@
-import { Coords, TempChild } from '../types';
+import { GetInitialStyleProp, TempLayout } from '../types';
 
-export const getInitialChildrenStyle = (array: { id: string; coords: Coords; width: number }[]) => {
+export const getInitialChildrenStyle = (array: GetInitialStyleProp[]) => {
 	const sortedColumns = array.sort((a, b) => a.coords.x - b.coords.x);
 	let currentX = sortedColumns[0].coords.x;
 	let currentGridColumn = 1;
-	let style: TempChild = {};
+	let style: TempLayout = {};
 	sortedColumns.forEach(col => {
 		if (col.coords.x > currentX) {
 			currentX = col.coords.x;
@@ -12,7 +12,7 @@ export const getInitialChildrenStyle = (array: { id: string; coords: Coords; wid
 		}
 		style = {
 			...style,
-			[col.id]: { gridColumn: currentGridColumn, width: col.width },
+			[col.id]: { column: currentGridColumn, width: col.width, height: col.height },
 		};
 	});
 	const sortedRaws = array.sort((a, b) => a.coords.y - b.coords.y);
@@ -27,7 +27,7 @@ export const getInitialChildrenStyle = (array: { id: string; coords: Coords; wid
 			...style,
 			[raw.id]: {
 				...style[raw.id],
-				gridRow: currentGridRow,
+				row: currentGridRow,
 			},
 		};
 	});
