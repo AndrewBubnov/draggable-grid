@@ -1,24 +1,28 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { ChildrenStyle, DragStatus } from '../types';
+import { Child, DragStatus } from '../types';
 import { getInitialChildrenStyle } from '../utils/getInitialChildrenStyle';
-import { GAP, TEMPLATE_COLUMNS, TEMPLATE_ROWS } from '../constants';
+import { AUTO, GAP, SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS } from '../constants';
 
 export const useLayout = () => {
-	const [layout, setLayout] = useState<ChildrenStyle>({} as ChildrenStyle);
+	const [layout, setLayout] = useState<Child>({} as Child);
 	const [columnWidth, setColumnWidth] = useState<number>(0);
 	const [rowHeight, setRowHeight] = useState<number>(0);
 
-	const startLayout = useRef<ChildrenStyle>({} as ChildrenStyle);
+	const startLayout = useRef<Child>({} as Child);
 	const tiles = useRef<{ start: string | ''; end: string | '' }>({ start: '', end: '' });
 	const ref = useRef<HTMLDivElement>(null);
 
 	useLayoutEffect(() => {
 		if (!ref.current) return;
-		const childCoords = Array.from(ref.current?.children || []).map(child => ({
-			id: child.id,
-			coords: child.getBoundingClientRect(),
-		}));
-		const initLayout = getInitialChildrenStyle(childCoords) as ChildrenStyle;
+		const childCoords = Array.from(ref.current?.children || []).map(child => {
+			const computedWidth = getComputedStyle(child).getPropertyValue(SPAN);
+			return {
+				id: child.id,
+				coords: child.getBoundingClientRect(),
+				width: computedWidth === AUTO ? 1 : +computedWidth.split(' ')[1],
+			};
+		});
+		const initLayout = getInitialChildrenStyle(childCoords) as Child;
 		startLayout.current = initLayout;
 		setLayout(initLayout);
 	}, []);

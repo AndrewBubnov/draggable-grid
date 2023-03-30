@@ -12,13 +12,13 @@ export interface Coords {
 	height: number;
 }
 
-export type ChildrenStyle = Record<string, { gridRow: number; gridColumn: number }>;
-export type TempStyle = Record<string, { gridRow?: number; gridColumn: number }>;
+export type Child = Record<string, { gridRow: number; gridColumn: number; width: number }>;
+export type TempChild = Record<string, { gridRow?: number; gridColumn: number; width: number }>;
 
 export interface DraggableProps {
 	children: ReactElement;
-	startLayout: ChildrenStyle;
-	childrenStyle: ChildrenStyle;
+	startLayout: Child;
+	childrenStyle: Child;
 	columnWidth: number;
 	rowHeight: number;
 	onDrag(el: string, status: DragStatus): void;

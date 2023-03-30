@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { DELTA_X, DELTA_Y } from '../constants';
-import { ChildrenStyle } from '../types';
+import { Child } from '../types';
 
 interface UseRenderStyle {
-	startLayout: ChildrenStyle;
-	childrenStyle: ChildrenStyle;
+	startLayout: Child;
+	childrenStyle: Child;
 	columnWidth: number;
 	rowHeight: number;
 	id: string;
