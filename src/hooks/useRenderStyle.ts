@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { DELTA_X, DELTA_Y, GRID_COLUMN, GRID_ROW } from '../constants';
+import { DELTA_X, DELTA_Y } from '../constants';
 import { ChildrenStyle } from '../types';
 
 interface UseRenderStyle {
@@ -11,8 +11,6 @@ interface UseRenderStyle {
 }
 
 interface ReturnType {
-	[GRID_COLUMN]: number;
-	[GRID_ROW]: number;
 	[DELTA_X]: string;
 	[DELTA_Y]: string;
 }
@@ -35,8 +33,6 @@ export const useRenderStyle = ({
 		const currentRow = childrenStyle[id]?.gridRow;
 
 		return {
-			[GRID_COLUMN]: startColumn,
-			[GRID_ROW]: startRow,
 			[DELTA_X]: `${(currentColumn - startColumn) * columnWidth}px`,
 			[DELTA_Y]: `${(currentRow - startRow) * rowHeight}px`,
 		};
