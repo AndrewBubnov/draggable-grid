@@ -47,7 +47,7 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 			},
 			...target.reduce((acc, cur) => {
 				acc[cur] = { ...state[cur], [cross]: startElement[cross], [main]: startElement[main] + sumCounter };
-				sumCounter = sumCounter + state[cur][Location.WIDTH];
+				sumCounter = sumCounter + state[cur][crossSize];
 				return acc;
 			}, {} as Layout),
 		};
