@@ -20,17 +20,21 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 	const keys = Object.keys(state) as Array<keyof typeof state>;
 
 	if (startElement[crossSize] > endElement[crossSize]) {
-		const crossElements = keys.filter(el => state[el][cross] === state[end][cross]);
+		const crossElements = keys
+			.filter(el => state[el][cross] === state[end][cross])
+			.sort((a, b) => state[a][main] - state[b][main]);
+
 		const allTargetElements = crossElements.slice(crossElements.indexOf(end));
 
 		const target: string[] = [];
 		let sum = 0;
 		allTargetElements.forEach(el => {
-			if (sum < state[start][Location.WIDTH]) {
-				sum = sum + state[el][Location.WIDTH];
+			if (sum < state[start][crossSize]) {
+				sum = sum + state[el][crossSize];
 				target.push(el);
 			}
 		});
+
 		const allTargetWidth = target.reduce((acc, cur) => acc + state[cur][Location.WIDTH], 0);
 		if (allTargetWidth < state[start][Location.WIDTH]) return state;
 		let sumCounter = 0;
