@@ -17,8 +17,6 @@ function App() {
 			<div className={styles.item}>11</div>
 			<div className={styles.item}>12</div>
 			<div className={styles.item}>13</div>
-			{/*<div className={styles.item}>14</div>*/}
-			{/*<div className={styles.item}>15</div>*/}
 		</DragContainer>
 	);
 }
