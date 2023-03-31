@@ -19,6 +19,41 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 
 	const keys = Object.keys(state) as Array<keyof typeof state>;
 
+	if (startElement[size] > endElement[size] && startElement[main] !== endElement[main]) {
+		const crossElements = keys
+			.filter(el => state[el][main] === state[end][main])
+			.sort((a, b) => state[a][main] - state[b][main]);
+
+		const allTargetElements = crossElements.slice(crossElements.indexOf(end));
+
+		const target: string[] = [];
+		let sum = 0;
+		allTargetElements.forEach(el => {
+			if (sum < state[start][size]) {
+				sum = sum + state[el][size];
+				target.push(el);
+			}
+		});
+
+		const allTargetWidth = target.reduce((acc, cur) => acc + state[cur][size], 0);
+
+		if (allTargetWidth < state[start][size]) return state;
+		let sumCounter = 0;
+		return {
+			...state,
+			[start]: {
+				...endElement,
+				[Location.WIDTH]: startElement[Location.WIDTH],
+				[Location.HEIGHT]: startElement[Location.HEIGHT],
+			},
+			...target.reduce((acc, cur) => {
+				acc[cur] = { ...state[cur], [cross]: startElement[cross] + sumCounter, [main]: startElement[main] };
+				sumCounter = sumCounter + state[cur][size];
+				return acc;
+			}, {} as Layout),
+		};
+	}
+
 	if (startElement[crossSize] > endElement[crossSize]) {
 		const crossElements = keys
 			.filter(el => state[el][cross] === state[end][cross])
@@ -35,8 +70,8 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 			}
 		});
 
-		const allTargetWidth = target.reduce((acc, cur) => acc + state[cur][Location.WIDTH], 0);
-		if (allTargetWidth < state[start][Location.WIDTH]) return state;
+		const allTargetWidth = target.reduce((acc, cur) => acc + state[cur][crossSize], 0);
+		if (allTargetWidth < state[start][crossSize]) return state;
 		let sumCounter = 0;
 		return {
 			...state,
