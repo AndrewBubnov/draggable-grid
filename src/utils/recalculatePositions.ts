@@ -32,7 +32,11 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 					state[key][Location.ROW] <= endRow + startHeight - endHeight
 			)
 			.slice(0, startSquare / (endWidth * endHeight));
-		return [target, target.length >= startSquare];
+		const targetSquare = target.reduce(
+			(acc, cur) => acc + state[cur][Location.WIDTH] * state[cur][Location.HEIGHT],
+			0
+		);
+		return [target, targetSquare >= startSquare];
 	};
 
 	const diagonalNotEqual = () => {
@@ -56,6 +60,8 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 	};
 
 	const perpendicular = () => {
+		console.log('line 64');
+
 		const [target, allowed] = getTarget();
 
 		if (!allowed) return state;
@@ -76,27 +82,31 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 		};
 	};
 
-	const fromRightSimple = () => ({
-		...state,
-		...containerElements.reduce((acc, el) => {
-			const { [el]: element } = state;
-			if (el === start) return { ...acc, [start]: { ...endElement, [size]: startSize } };
-			if (el === end) {
-				return {
-					...acc,
-					[end]: {
-						...startElement,
-						[cross]: startElement[cross] + startSize - endSize,
-						[size]: endSize,
-					},
-				};
-			}
-			if (element[cross] < endElement[cross] || element[cross] > startElement[cross]) {
-				return { ...acc, [el]: state[el] };
-			}
-			return { ...acc, [el]: { ...state[el], [cross]: element[cross] + startSize - endSize } };
-		}, {} as Layout),
-	});
+	const fromRightSimple = () => {
+		console.log('line 87');
+
+		return {
+			...state,
+			...containerElements.reduce((acc, el) => {
+				const { [el]: element } = state;
+				if (el === start) return { ...acc, [start]: { ...endElement, [size]: startSize } };
+				if (el === end) {
+					return {
+						...acc,
+						[end]: {
+							...startElement,
+							[cross]: startElement[cross] + startSize - endSize,
+							[size]: endSize,
+						},
+					};
+				}
+				if (element[cross] < endElement[cross] || element[cross] > startElement[cross]) {
+					return { ...acc, [el]: state[el] };
+				}
+				return { ...acc, [el]: { ...state[el], [cross]: element[cross] + startSize - endSize } };
+			}, {} as Layout),
+		};
+	};
 
 	if (startElement[size] > endElement[size] && startElement[main] !== endElement[main]) return diagonalNotEqual();
 
