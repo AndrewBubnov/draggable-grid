@@ -59,7 +59,7 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 		const [target, allowed] = getTarget();
 
 		if (!allowed) return state;
-		if (!allowed) return state;
+
 		let sumCounter = 0;
 		return {
 			...state,
