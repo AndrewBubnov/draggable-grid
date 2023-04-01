@@ -83,8 +83,6 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 	};
 
 	const fromRightSimple = () => {
-		console.log('line 87');
-
 		return {
 			...state,
 			...containerElements.reduce((acc, el) => {
