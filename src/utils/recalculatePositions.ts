@@ -15,29 +15,30 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 
 	const { [start]: startElement, [end]: endElement } = state;
 
-	if (startElement[crossSize] < endElement[crossSize]) return state;
+	if (startElement[crossSize] < endElement[crossSize] || startElement[size] < endElement[size]) return state;
 
 	const keys = Object.keys(state) as Array<keyof typeof state>;
 
-	if (startElement[size] > endElement[size] && startElement[main] !== endElement[main]) {
-		const crossElements = keys
-			.filter(el => state[el][main] === state[end][main])
-			.sort((a, b) => state[a][main] - state[b][main]);
+	const diagonalEqual = () => ({ ...state, [start]: endElement, [end]: startElement });
 
-		const allTargetElements = crossElements.slice(crossElements.indexOf(end));
+	const getTarget = (): [string[], boolean] => {
+		const startSquare = startWidth * startHeight;
+		const target = keys
+			.filter(
+				key =>
+					state[key][Location.COLUMN] >= endColumn &&
+					state[key][Location.ROW] >= endRow &&
+					state[key][Location.COLUMN] <= endColumn + startWidth - endWidth &&
+					state[key][Location.ROW] <= endRow + startHeight - endHeight
+			)
+			.slice(0, startSquare / (endWidth * endHeight));
+		return [target, target.length >= startSquare];
+	};
 
-		const target: string[] = [];
-		let sum = 0;
-		allTargetElements.forEach(el => {
-			if (sum < state[start][size]) {
-				sum = sum + state[el][size];
-				target.push(el);
-			}
-		});
+	const diagonalNotEqual = () => {
+		const [target, allowed] = getTarget();
 
-		const allTargetWidth = target.reduce((acc, cur) => acc + state[cur][size], 0);
-
-		if (allTargetWidth < state[start][size]) return state;
+		if (!allowed) return state;
 		let sumCounter = 0;
 		return {
 			...state,
@@ -52,26 +53,13 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 				return acc;
 			}, {} as Layout),
 		};
-	}
+	};
 
-	if (startElement[crossSize] > endElement[crossSize]) {
-		const crossElements = keys
-			.filter(el => state[el][cross] === state[end][cross])
-			.sort((a, b) => state[a][main] - state[b][main]);
+	const perpendicular = () => {
+		const [target, allowed] = getTarget();
 
-		const allTargetElements = crossElements.slice(crossElements.indexOf(end));
-
-		const target: string[] = [];
-		let sum = 0;
-		allTargetElements.forEach(el => {
-			if (sum < state[start][crossSize]) {
-				sum = sum + state[el][crossSize];
-				target.push(el);
-			}
-		});
-
-		const allTargetWidth = target.reduce((acc, cur) => acc + state[cur][crossSize], 0);
-		if (allTargetWidth < state[start][crossSize]) return state;
+		if (!allowed) return state;
+		if (!allowed) return state;
 		let sumCounter = 0;
 		return {
 			...state,
@@ -86,42 +74,41 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 				return acc;
 			}, {} as Layout),
 		};
-	}
+	};
 
-	if (!isSameRow && !isSameColumn) {
-		return {
-			...state,
-			[start]: endElement,
-			[end]: startElement,
-		};
-	}
+	const fromRightSimple = () => ({
+		...state,
+		...containerElements.reduce((acc, el) => {
+			const { [el]: element } = state;
+			if (el === start) return { ...acc, [start]: { ...endElement, [size]: startSize } };
+			if (el === end) {
+				return {
+					...acc,
+					[end]: {
+						...startElement,
+						[cross]: startElement[cross] + startSize - endSize,
+						[size]: endSize,
+					},
+				};
+			}
+			if (element[cross] < endElement[cross] || element[cross] > startElement[cross]) {
+				return { ...acc, [el]: state[el] };
+			}
+			return { ...acc, [el]: { ...state[el], [cross]: element[cross] + startSize - endSize } };
+		}, {} as Layout),
+	});
+
+	if (startElement[size] > endElement[size] && startElement[main] !== endElement[main]) return diagonalNotEqual();
+
+	if (startElement[crossSize] > endElement[crossSize]) return perpendicular();
+
+	if (!isSameRow && !isSameColumn) return diagonalEqual();
 
 	const fromRight = state[start][cross] > state[end][cross];
 
 	const containerElements = keys.filter(el => state[el][main] === state[end][main]);
 
-	if (fromRight) {
-		return {
-			...state,
-			...containerElements.reduce((acc, el) => {
-				const { [el]: element } = state;
-				if (el === start) return { ...acc, [start]: { ...endElement, [size]: startSize } };
-				if (el === end) {
-					return {
-						...acc,
-						[end]: {
-							...startElement,
-							[cross]: startElement[cross] + startSize - endSize,
-							[size]: endSize,
-						},
-					};
-				}
-				if (element[cross] < endElement[cross] || element[cross] > startElement[cross]) {
-					return { ...acc, [el]: state[el] };
-				}
-				return { ...acc, [el]: { ...state[el], [cross]: element[cross] + startSize - endSize } };
-			}, {} as Layout),
-		};
-	}
+	if (fromRight) return fromRightSimple();
+
 	return recalculatePositions(state, end, start);
 };
