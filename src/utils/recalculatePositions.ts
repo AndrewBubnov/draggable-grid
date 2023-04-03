@@ -15,6 +15,8 @@ const prepare = (state: Layout, start: string, end: string) => {
 			: [Location.HEIGHT, startHeight, endHeight, Location.WIDTH];
 
 	const { [start]: startElement, [end]: endElement } = state;
+	const keys = Object.keys(state) as Array<keyof typeof state>;
+
 	return {
 		startWidth,
 		startHeight,
@@ -33,16 +35,15 @@ const prepare = (state: Layout, start: string, end: string) => {
 		crossSize,
 		startElement,
 		endElement,
+		keys,
 	};
 };
 
 const simple = (state: Layout, start: string, end: string): Layout => {
-	const { main, cross, size, startSize, endSize, startElement, endElement } = prepare(state, start, end);
-	const keys = Object.keys(state) as Array<keyof typeof state>;
+	const { main, cross, size, startSize, endSize, startElement, endElement, keys } = prepare(state, start, end);
 
 	const containerElements = keys.filter(el => state[el][main] === state[end][main]);
-	const fromRight = state[start][cross] > state[end][cross];
-	if (fromRight)
+	if (state[start][cross] > state[end][cross])
 		return {
 			...state,
 			...containerElements.reduce((acc, el) => {
@@ -83,11 +84,10 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 		crossSize,
 		startElement,
 		endElement,
+		keys,
 	} = prepare(state, start, end);
 
 	if (startElement[crossSize] < endElement[crossSize]) return state;
-
-	const keys = Object.keys(state) as Array<keyof typeof state>;
 
 	const diagonalEqual = () => ({ ...state, [start]: endElement, [end]: startElement });
 
