@@ -73,3 +73,8 @@ export interface GetInitialStyleProp {
 	width: number;
 	height: number;
 }
+
+export enum Complex {
+	DIAGONAL = 'diagonal',
+	STRAIGHT = 'straight',
+}

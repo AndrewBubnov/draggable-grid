@@ -1,4 +1,4 @@
-import { Layout, Location } from '../types';
+import { Complex, Layout, Location } from '../types';
 
 const prepare = (state: Layout, start: string, end: string) => {
 	const { width: startWidth, height: startHeight, row: startRow, column: startColumn } = state[start];
@@ -108,11 +108,12 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 		return [target, allowedSingle || targetSquare === startSquare];
 	};
 
-	const diagonalNotEqual = () => {
+	const complex = (direction: Complex) => {
 		const [target, allowed] = getTarget();
 
 		if (!allowed) return state;
 		let sumCounter = 0;
+		const isDiagonal = direction === Complex.DIAGONAL;
 		return {
 			...state,
 			[start]: {
@@ -121,39 +122,24 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 				[Location.HEIGHT]: startElement[Location.HEIGHT],
 			},
 			...target.reduce((acc, cur) => {
-				acc[cur] = { ...state[cur], [cross]: startElement[cross] + sumCounter, [main]: startElement[main] };
-				sumCounter = sumCounter + state[cur][size];
+				acc[cur] = isDiagonal
+					? { ...state[cur], [cross]: startElement[cross] + sumCounter, [main]: startElement[main] }
+					: { ...state[cur], [cross]: startElement[cross], [main]: startElement[main] + sumCounter };
+				sumCounter = isDiagonal ? sumCounter + state[cur][size] : sumCounter + state[cur][crossSize];
 				return acc;
 			}, {} as Layout),
 		};
 	};
 
-	const perpendicular = () => {
-		const [target, allowed] = getTarget();
+	const isComplexDiagonal = startElement[size] > endElement[size] && startElement[main] !== endElement[main];
 
-		if (!allowed) return state;
+	if (isComplexDiagonal) return complex(Complex.DIAGONAL);
 
-		let sumCounter = 0;
-		return {
-			...state,
-			[start]: {
-				...endElement,
-				[Location.WIDTH]: startElement[Location.WIDTH],
-				[Location.HEIGHT]: startElement[Location.HEIGHT],
-			},
-			...target.reduce((acc, cur) => {
-				acc[cur] = { ...state[cur], [cross]: startElement[cross], [main]: startElement[main] + sumCounter };
-				sumCounter = sumCounter + state[cur][crossSize];
-				return acc;
-			}, {} as Layout),
-		};
-	};
+	if (startElement[crossSize] > endElement[crossSize]) return complex(Complex.STRAIGHT);
 
-	if (startElement[size] > endElement[size] && startElement[main] !== endElement[main]) return diagonalNotEqual();
+	const isDiagonalEqual = !isSameRow && !isSameColumn && startWidth === endWidth && startHeight === endHeight;
 
-	if (startElement[crossSize] > endElement[crossSize]) return perpendicular();
-
-	if (!isSameRow && !isSameColumn && startWidth === endWidth && startHeight === endHeight) return diagonalEqual();
+	if (isDiagonalEqual) return diagonalEqual();
 
 	return simple(state, end, start);
 };
