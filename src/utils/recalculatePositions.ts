@@ -103,10 +103,7 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 					state[key][Location.ROW] <= endRow + startHeight - endHeight
 			)
 			.slice(0, startSquare / (endWidth * endHeight));
-		const targetSquare = target.reduce(
-			(acc, cur) => acc + state[cur][Location.WIDTH] * state[cur][Location.HEIGHT],
-			0
-		);
+		const targetSquare = target.reduce((acc, cur) => acc + state[cur][size] * state[cur][crossSize], 0);
 		const allowedSingle = (target.length === 1 && isSameColumn) || (target.length === 1 && isSameRow);
 		return [target, allowedSingle || targetSquare === startSquare];
 	};
