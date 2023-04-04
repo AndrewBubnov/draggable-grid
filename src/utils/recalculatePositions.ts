@@ -4,15 +4,20 @@ const prepare = (state: Layout, start: string, end: string) => {
 	const { width: startWidth, height: startHeight, row: startRow, column: startColumn } = state[start];
 	const { width: endWidth, height: endHeight, row: endRow, column: endColumn } = state[end];
 
-	const isSameRow = startRow === endRow;
-	const isSameColumn = startColumn === endColumn;
+	const isDifferentRow = startRow !== endRow;
+	const isDifferentColumn = startColumn !== endColumn;
 
-	const [main, cross] = startColumn !== endColumn ? [Location.ROW, Location.COLUMN] : [Location.COLUMN, Location.ROW];
+	let isHorizontal = true;
+	if (startWidth === endWidth) isHorizontal = isDifferentColumn;
+	if (isDifferentRow) {
+		isHorizontal = Math.abs(startColumn - endColumn) > Math.abs(startWidth - endWidth) && isDifferentColumn;
+	}
 
-	const [size, startSize, endSize, crossSize] =
-		startColumn !== endColumn
-			? [Location.WIDTH, startWidth, endWidth, Location.HEIGHT]
-			: [Location.HEIGHT, startHeight, endHeight, Location.WIDTH];
+	const [main, cross] = isHorizontal ? [Location.ROW, Location.COLUMN] : [Location.COLUMN, Location.ROW];
+
+	const [size, startSize, endSize, crossSize] = isHorizontal
+		? [Location.WIDTH, startWidth, endWidth, Location.HEIGHT]
+		: [Location.HEIGHT, startHeight, endHeight, Location.WIDTH];
 
 	const { [start]: startElement, [end]: endElement } = state;
 	const keys = Object.keys(state) as Array<keyof typeof state>;
@@ -25,8 +30,8 @@ const prepare = (state: Layout, start: string, end: string) => {
 		endHeight,
 		endRow,
 		endColumn,
-		isSameRow,
-		isSameColumn,
+		isDifferentColumn,
+		isDifferentRow,
 		main,
 		cross,
 		size,
@@ -76,8 +81,8 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 		endHeight,
 		endRow,
 		endColumn,
-		isSameRow,
-		isSameColumn,
+		isDifferentColumn,
+		isDifferentRow,
 		main,
 		cross,
 		size,
@@ -104,7 +109,7 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 			)
 			.slice(0, startSquare / (endWidth * endHeight));
 		const targetSquare = target.reduce((acc, cur) => acc + state[cur][size] * state[cur][crossSize], 0);
-		const allowedSingle = (target.length === 1 && isSameColumn) || (target.length === 1 && isSameRow);
+		const allowedSingle = (target.length === 1 && !isDifferentColumn) || (target.length === 1 && !isDifferentRow);
 		return [target, allowedSingle || targetSquare === startSquare];
 	};
 
@@ -138,7 +143,8 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 
 	if (startElement[crossSize] > endElement[crossSize]) return complex(Complex.STRAIGHT);
 
-	const isDiagonalEqual = !isSameRow && !isSameColumn && startWidth === endWidth && startHeight === endHeight;
+	const isDiagonalEqual =
+		isDifferentColumn && isDifferentColumn && startWidth === endWidth && startHeight === endHeight;
 
 	if (isDiagonalEqual) return diagonalEqual();
 
