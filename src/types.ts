@@ -78,3 +78,5 @@ export enum Complex {
 	DIAGONAL = 'diagonal',
 	STRAIGHT = 'straight',
 }
+
+export type Tiles = { start: string; end: string };

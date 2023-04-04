@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Layout, DragStatus } from '../types';
+import {Layout, DragStatus, Tiles} from '../types';
 import { getInitialChildrenStyle } from '../utils/getInitialChildrenStyle';
 import { AUTO, GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN } from '../constants';
 import { recalculatePositions } from '../utils/recalculatePositions';
@@ -10,7 +10,7 @@ export const useLayout = () => {
 	const [rowHeight, setRowHeight] = useState<number>(0);
 
 	const startLayout = useRef<Layout>({} as Layout);
-	const tiles = useRef<{ start: string | ''; end: string | '' }>({ start: '', end: '' });
+	const tiles = useRef<Tiles>({ start: '', end: '' });
 	const ref = useRef<HTMLDivElement>(null);
 
 	useLayoutEffect(() => {
