@@ -1,16 +1,15 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Layout, DragStatus, Tiles } from '../types';
+import { DragStatus, Tiles } from '../types';
 import { getInitialLayout } from '../utils/getInitialLayout';
 import { GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN } from '../constants';
-import { recalculatePositions } from '../utils/recalculatePositions';
 import { getComputedParam } from '../utils/getComputedParam';
+import { useStore } from '../store';
 
 export const useLayout = () => {
-	const [layout, setLayout] = useState<Layout>({} as Layout);
+	const { layout, setLayout, setStartLayout, startLayout, recalculateLayout } = useStore();
 	const [columnWidth, setColumnWidth] = useState<number>(0);
 	const [rowHeight, setRowHeight] = useState<number>(0);
 
-	const startLayout = useRef<Layout>({} as Layout);
 	const tiles = useRef<Tiles>({ start: '', end: '' });
 	const ref = useRef<HTMLDivElement>(null);
 
@@ -28,7 +27,7 @@ export const useLayout = () => {
 			};
 		});
 		const initLayout = getInitialLayout(childCoords);
-		startLayout.current = initLayout;
+		setStartLayout(initLayout);
 		setLayout(initLayout);
 	}, []);
 
@@ -62,8 +61,8 @@ export const useLayout = () => {
 			tiles.current = { ...tiles.current, end: element };
 		}
 		const { start, end } = tiles.current;
-		if (start && end) setLayout(prevState => recalculatePositions(prevState, start, end));
+		if (start && end) recalculateLayout(start, end);
 	};
 
-	return { layout, startLayout: startLayout.current, dragHandlers, columnWidth, rowHeight, ref };
+	return { layout, startLayout, dragHandlers, columnWidth, rowHeight, ref };
 };
