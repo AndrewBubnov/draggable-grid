@@ -1,10 +1,8 @@
 import { useDebugValue, useSyncExternalStore } from 'react';
 import {
-	Bound,
-	ComputedStoreCreator,
+	CreateReturn,
 	FunctionalParam,
 	ObjectParam,
-	Selector,
 	SetStateAction,
 	Store,
 	StoreCreator,
@@ -21,17 +19,12 @@ const extractData = <T extends object>(debugValue: T) =>
 			return acc;
 		}, {} as T);
 
-const useStore = <T extends object>(bound: Bound<T>, selector?: Selector<T>): T & T[keyof T] => {
-	const [store, computed] = bound;
-	const { getState, subscribe, persistKey } = store;
-
-	if (persistKey) localStorage.setItem(persistKey, JSON.stringify(store.getState()));
+const useStore = <T extends object>(store: Store<T>): T => {
+	const { getState, subscribe } = store;
 
 	const snapshot = useSyncExternalStore(subscribe, getState);
-	const united = computed ? merge(snapshot, computed(snapshot)) : snapshot;
-	const returnValue = selector ? selector(united) : united;
-	useDebugValue(returnValue, extractData);
-	return returnValue;
+	useDebugValue(snapshot, extractData);
+	return snapshot;
 };
 
 const createStore = <T extends object>(storeCreatorArg: StoreCreator<T>): Store<T> => {
@@ -58,12 +51,11 @@ const createStore = <T extends object>(storeCreatorArg: StoreCreator<T>): Store<
 			subscribers.add(callback);
 			return () => subscribers.delete(callback);
 		},
-		persistKey,
 	};
 };
 
-export const create = <T extends object>(storeCreator: StoreCreator<T>, computed?: ComputedStoreCreator<T>) => {
+export const create = <T extends object>(storeCreator: StoreCreator<T>): CreateReturn<T> => {
 	const store = createStore(storeCreator);
-	const hook = (bound: Bound<T>, selector?: Selector<T>) => useStore(bound, selector);
-	return [hook.bind(null, [store, computed]), store.getState()];
+	const hook = (bound: Store<T>) => useStore(bound);
+	return [hook.bind(null, store), store.getState()];
 };
