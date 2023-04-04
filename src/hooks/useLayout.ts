@@ -1,8 +1,9 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import {Layout, DragStatus, Tiles} from '../types';
+import { Layout, DragStatus, Tiles } from '../types';
 import { getInitialChildrenStyle } from '../utils/getInitialChildrenStyle';
 import { AUTO, GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN } from '../constants';
 import { recalculatePositions } from '../utils/recalculatePositions';
+import { getComputedParam } from '../utils/getComputedParam';
 
 export const useLayout = () => {
 	const [layout, setLayout] = useState<Layout>({} as Layout);
@@ -22,8 +23,8 @@ export const useLayout = () => {
 			return {
 				id: child.id,
 				coords: child.getBoundingClientRect(),
-				width: computedWidth === AUTO ? 1 : +computedWidth.split(' ')[1],
-				height: computedHeight === AUTO ? 1 : +computedHeight.split(' ')[1],
+				width: getComputedParam(computedWidth),
+				height: getComputedParam(computedHeight),
 			};
 		});
 		const initLayout = getInitialChildrenStyle(childCoords) as Layout;

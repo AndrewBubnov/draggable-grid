@@ -6,13 +6,6 @@ export interface DragContainerProps {
 	className: string;
 }
 
-export interface Coords {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-}
-
 export enum Location {
 	COLUMN = 'column',
 	ROW = 'row',
@@ -69,7 +62,7 @@ export type Initial = { [Location.ROW]: number; [Location.COLUMN]: number } | nu
 
 export interface GetInitialStyleProp {
 	id: string;
-	coords: Coords;
+	coords: DOMRect;
 	width: number;
 	height: number;
 }
