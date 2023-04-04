@@ -1,6 +1,6 @@
 import { GetInitialStyleProp, Layout, TempLayout } from '../types';
 
-export const getInitialChildrenStyle = (array: GetInitialStyleProp[]) => {
+export const getInitialLayout = (array: GetInitialStyleProp[]) => {
 	const sortedColumns = array.sort((a, b) => a.coords.x - b.coords.x);
 
 	let currentX = sortedColumns[0].coords.x;

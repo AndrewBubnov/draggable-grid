@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Layout, DragStatus, Tiles } from '../types';
-import { getInitialChildrenStyle } from '../utils/getInitialChildrenStyle';
+import { getInitialLayout } from '../utils/getInitialLayout';
 import { GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN } from '../constants';
 import { recalculatePositions } from '../utils/recalculatePositions';
 import { getComputedParam } from '../utils/getComputedParam';
@@ -27,7 +27,7 @@ export const useLayout = () => {
 				height: getComputedParam(computedHeight),
 			};
 		});
-		const initLayout = getInitialChildrenStyle(childCoords);
+		const initLayout = getInitialLayout(childCoords);
 		startLayout.current = initLayout;
 		setLayout(initLayout);
 	}, []);
