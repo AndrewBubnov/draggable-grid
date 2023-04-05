@@ -11,7 +11,7 @@ export const useRenderStyle = ({
 }: UseRenderStyle): UseRenderStyleReturn => {
 	const [initial, setInitial] = useState<Initial>(null);
 
-	useEffect(() => setInitial(prevState => (prevState ? prevState : startLayout[id])), [startLayout]);
+	useEffect(() => setInitial(startLayout[id]), [startLayout, id]);
 
 	return useMemo(() => {
 		const startColumn = initial?.[Location.COLUMN] || 0;
