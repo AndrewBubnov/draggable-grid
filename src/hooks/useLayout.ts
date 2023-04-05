@@ -1,16 +1,25 @@
-import { useLayoutEffect, useRef, useState } from 'react';
-import { DragStatus, Tiles } from '../types';
+import { useLayoutEffect, useRef } from 'react';
+import { DragStatus } from '../types';
 import { getInitialLayout } from '../utils/getInitialLayout';
 import { GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN } from '../constants';
 import { getComputedParam } from '../utils/getComputedParam';
 import { useStore } from '../store';
 
 export const useLayout = () => {
-	const { layout, setLayout, setStartLayout, startLayout, recalculateLayout } = useStore();
-	const [columnWidth, setColumnWidth] = useState<number>(0);
-	const [rowHeight, setRowHeight] = useState<number>(0);
+	const {
+		layout,
+		setLayout,
+		setStartLayout,
+		startLayout,
+		recalculateLayout,
+		rowHeight,
+		setRowHeight,
+		columnWidth,
+		setColumnWidth,
+		tiles,
+		setTiles,
+	} = useStore();
 
-	const tiles = useRef<Tiles>({ start: '', end: '' });
 	const ref = useRef<HTMLDivElement>(null);
 
 	useLayoutEffect(() => {
@@ -52,15 +61,15 @@ export const useLayout = () => {
 
 	const dragHandlers = (element: string, status: DragStatus) => {
 		if (status === DragStatus.CANCEL) {
-			tiles.current = { start: '', end: '' };
+			setTiles({ start: '', end: '' });
 		}
 		if (status === DragStatus.START) {
-			tiles.current = { ...tiles.current, start: element };
+			setTiles({ ...tiles, start: element });
 		}
-		if (status === DragStatus.END && tiles.current.start !== element) {
-			tiles.current = { ...tiles.current, end: element };
+		if (status === DragStatus.END && tiles.start !== element) {
+			setTiles({ ...tiles, end: element });
 		}
-		const { start, end } = tiles.current;
+		const { start, end } = tiles;
 		if (start && end) recalculateLayout(start, end);
 	};
 
