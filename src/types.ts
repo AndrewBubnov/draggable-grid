@@ -82,7 +82,7 @@ export type SetStateAction<S> = ObjectParam<S> | FunctionalParam<S>;
 export type StoreCreator<T> = (set: (action: SetStateAction<T>) => void) => T;
 export type SubscribeCallback<T> = (arg: T) => void;
 export type CreateReturn<T> = [() => T, T];
-export type WithInternal = { resetLayout: () => void };
+export type WithInternal = { resetConfig: () => void };
 
 export interface Store<T> {
 	getState: () => T;

@@ -1,9 +1,9 @@
 import styles from './App.module.css';
-import { DragContainer } from './components/DragContainer';
-import { resetLayout } from './store';
 import { Layout } from './types';
 import { useEffect, useState } from 'react';
+import { DragContainer, resetConfig } from '../index';
 import { getAsyncConfig } from './utils/getAsyncConfig';
+import { updateConfig } from './utils/updateConfig';
 
 const App = () => {
 	const [config, setConfig] = useState<Layout | undefined>();
@@ -15,12 +15,12 @@ const App = () => {
 		})();
 	}, []);
 
-	const update = (layout: Layout) => localStorage.setItem('layout', JSON.stringify(layout));
-
 	return (
-		<div>
-			<button onClick={resetLayout}>Reset</button>
-			<DragContainer className={styles.grid} config={config} updateConfig={update}>
+		<div className={styles.wrapper}>
+			<button onClick={resetConfig} className={styles.button}>
+				Reset
+			</button>
+			<DragContainer className={styles.grid} config={config} updateConfig={updateConfig}>
 				<div className={`${styles.item} ${styles.tall}`}>1</div>
 				<div className={styles.item}>2</div>
 				<div className={styles.item}>3</div>

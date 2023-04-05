@@ -1,6 +1,5 @@
 import { create } from './utils/jaunte';
 import { Layout, Tiles } from './types';
-import { recalculatePositions } from './utils/recalculatePositions';
 
 interface UseStore {
 	layout: Layout;
@@ -15,10 +14,10 @@ interface UseStore {
 	setRowHeight: (arg: number) => void;
 	setLayout: (arg: Layout) => void;
 	setStartLayout: (arg: Layout) => void;
-	resetLayout: () => void;
+	resetConfig: () => void;
 }
 
-export const [useStore, { resetLayout }] = create<UseStore>(set => ({
+export const [useStore, { resetConfig }] = create<UseStore>(set => ({
 	layout: {},
 	startLayout: {},
 	columnWidth: 0,
@@ -31,5 +30,5 @@ export const [useStore, { resetLayout }] = create<UseStore>(set => ({
 	setTiles: (arg: Tiles) => set({ tiles: arg }),
 	setLayout: (arg: Layout) => set(() => ({ layout: arg })),
 	setStartLayout: (arg: Layout) => set(() => ({ startLayout: arg })),
-	resetLayout: () => set(state => ({ layout: state.storedConfig ? state.storedConfig : state.startLayout })),
+	resetConfig: () => set(state => ({ layout: state.storedConfig ? state.storedConfig : state.startLayout })),
 }));
