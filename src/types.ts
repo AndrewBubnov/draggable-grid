@@ -4,6 +4,8 @@ import { DELTA_X, DELTA_Y } from './constants';
 export interface DragContainerProps {
 	children: ReactElement[];
 	className: string;
+	config?: Layout;
+	updateConfig?: (arg: Layout) => void;
 }
 
 export enum Location {
@@ -58,7 +60,7 @@ export interface UseRenderStyleReturn {
 	[DELTA_Y]: string;
 }
 
-export type Initial = { [Location.ROW]: number; [Location.COLUMN]: number } | null;
+export type Initial = Record<Location, number> | null;
 
 export interface GetInitialStyleProp {
 	id: string;

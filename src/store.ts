@@ -8,12 +8,13 @@ interface UseStore {
 	columnWidth: number;
 	rowHeight: number;
 	tiles: Tiles;
+	storedConfig: Layout | null;
+	setStoredConfig: (arg: Layout) => void;
 	setTiles: (arg: Tiles) => void;
 	setColumnWidth: (arg: number) => void;
 	setRowHeight: (arg: number) => void;
 	setLayout: (arg: Layout) => void;
 	setStartLayout: (arg: Layout) => void;
-	recalculateLayout: (start: string, end: string) => void;
 	resetLayout: () => void;
 }
 
@@ -22,13 +23,13 @@ export const [useStore, { resetLayout }] = create<UseStore>(set => ({
 	startLayout: {},
 	columnWidth: 0,
 	rowHeight: 0,
+	tiles: { start: '', end: '' },
+	storedConfig: null,
+	setStoredConfig: (arg: Layout) => set({ storedConfig: arg }),
 	setColumnWidth: (arg: number) => set({ columnWidth: arg }),
 	setRowHeight: (arg: number) => set({ rowHeight: arg }),
-	tiles: { start: '', end: '' },
 	setTiles: (arg: Tiles) => set({ tiles: arg }),
 	setLayout: (arg: Layout) => set(() => ({ layout: arg })),
 	setStartLayout: (arg: Layout) => set(() => ({ startLayout: arg })),
-	recalculateLayout: (start: string, end: string) =>
-		set(state => ({ layout: recalculatePositions(state.layout, start, end) })),
-	resetLayout: () => set(state => ({ layout: state.startLayout })),
+	resetLayout: () => set(state => ({ layout: state.storedConfig ? state.storedConfig : state.startLayout })),
 }));

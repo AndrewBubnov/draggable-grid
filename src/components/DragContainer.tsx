@@ -3,8 +3,8 @@ import { Draggable } from './Draggable';
 import { DragContainerProps } from '../types';
 import { useLayout } from '../hooks/useLayout';
 
-export const DragContainer = ({ children, className }: DragContainerProps) => {
-	const { layout, startLayout, dragHandlers, columnWidth, rowHeight, ref } = useLayout();
+export const DragContainer = ({ children, className, config, updateConfig }: DragContainerProps) => {
+	const { layout, startLayout, dragHandlers, columnWidth, rowHeight, ref } = useLayout(config, updateConfig);
 
 	return (
 		<div className={className} ref={ref}>

@@ -1,23 +1,24 @@
 import { useLayoutEffect, useRef } from 'react';
-import { DragStatus } from '../types';
+import { DragStatus, Layout } from '../types';
 import { getInitialLayout } from '../utils/getInitialLayout';
 import { GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN } from '../constants';
 import { getComputedParam } from '../utils/getComputedParam';
 import { useStore } from '../store';
+import { recalculatePositions } from '../utils/recalculatePositions';
 
-export const useLayout = () => {
+export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void) => {
 	const {
 		layout,
 		setLayout,
 		setStartLayout,
 		startLayout,
-		recalculateLayout,
 		rowHeight,
 		setRowHeight,
 		columnWidth,
 		setColumnWidth,
 		tiles,
 		setTiles,
+		setStoredConfig,
 	} = useStore();
 
 	const ref = useRef<HTMLDivElement>(null);
@@ -59,6 +60,13 @@ export const useLayout = () => {
 		return () => observer.unobserve(current);
 	}, []);
 
+	useLayoutEffect(() => {
+		if (config && Object.keys(config).length) {
+			setLayout(config);
+			setStoredConfig(config);
+		}
+	}, [config, setLayout, setStoredConfig]);
+
 	const dragHandlers = (element: string, status: DragStatus) => {
 		if (status === DragStatus.CANCEL) {
 			setTiles({ start: '', end: '' });
@@ -70,7 +78,11 @@ export const useLayout = () => {
 			setTiles({ ...tiles, end: element });
 		}
 		const { start, end } = tiles;
-		if (start && end) recalculateLayout(start, end);
+		if (start && end) {
+			const newLayout = recalculatePositions(layout, start, end);
+			setLayout(newLayout);
+			if (updateConfig) updateConfig(newLayout);
+		}
 	};
 
 	return { layout, startLayout, dragHandlers, columnWidth, rowHeight, ref };
