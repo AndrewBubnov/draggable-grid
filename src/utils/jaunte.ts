@@ -7,11 +7,12 @@ import {
 	Store,
 	StoreCreator,
 	SubscribeCallback,
+	WithInternal,
 } from '../types';
 
 const merge = (...args: object[]) => Object.assign({}, ...args);
 
-const extractData = <T extends object>(debugValue: T) =>
+const extractData = <T extends WithInternal>(debugValue: T) =>
 	(Object.keys(debugValue) as Array<keyof T>)
 		.filter(key => typeof debugValue[key] !== 'function')
 		.reduce((acc, cur) => {
@@ -19,7 +20,7 @@ const extractData = <T extends object>(debugValue: T) =>
 			return acc;
 		}, {} as T);
 
-const useStore = <T extends object>(store: Store<T>): T => {
+const useStore = <T extends WithInternal>(store: Store<T>): T => {
 	const { getState, subscribe } = store;
 
 	const snapshot = useSyncExternalStore(subscribe, getState);
@@ -27,7 +28,7 @@ const useStore = <T extends object>(store: Store<T>): T => {
 	return snapshot;
 };
 
-const createStore = <T extends object>(storeCreatorArg: StoreCreator<T>): Store<T> => {
+const createStore = <T extends WithInternal>(storeCreatorArg: StoreCreator<T>): Store<T> => {
 	const [storeCreator, persistKey, persisted] = Array.isArray(storeCreatorArg) ? storeCreatorArg : [storeCreatorArg];
 
 	let store = {} as T;
@@ -54,7 +55,7 @@ const createStore = <T extends object>(storeCreatorArg: StoreCreator<T>): Store<
 	};
 };
 
-export const create = <T extends object>(storeCreator: StoreCreator<T>): CreateReturn<T> => {
+export const create = <T extends WithInternal>(storeCreator: StoreCreator<T>): CreateReturn<T> => {
 	const store = createStore(storeCreator);
 	const hook = (bound: Store<T>) => useStore(bound);
 	return [hook.bind(null, store), store.getState()];

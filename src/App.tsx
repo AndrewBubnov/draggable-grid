@@ -1,10 +1,10 @@
 import styles from './App.module.css';
 import { DragContainer } from './components/DragContainer';
-import { layoutState } from './store';
+import { reset } from './store';
 
 const App = () => (
 	<div>
-		<button onClick={layoutState.reset}>Reset</button>
+		<button onClick={reset}>Reset</button>
 		<DragContainer className={styles.grid}>
 			<div className={`${styles.item} ${styles.tall}`}>1</div>
 			<div className={styles.item}>2</div>

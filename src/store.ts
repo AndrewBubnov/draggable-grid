@@ -17,7 +17,7 @@ interface UseStore {
 	reset: () => void;
 }
 
-export const [useStore, layoutState] = create<UseStore>(set => ({
+export const [useStore, { reset }] = create<UseStore>(set => ({
 	layout: {},
 	startLayout: {},
 	columnWidth: 0,
