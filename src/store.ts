@@ -14,10 +14,10 @@ interface UseStore {
 	setLayout: (arg: Layout) => void;
 	setStartLayout: (arg: Layout) => void;
 	recalculateLayout: (start: string, end: string) => void;
-	reset: () => void;
+	resetLayout: () => void;
 }
 
-export const [useStore, { reset }] = create<UseStore>(set => ({
+export const [useStore, { resetLayout }] = create<UseStore>(set => ({
 	layout: {},
 	startLayout: {},
 	columnWidth: 0,
@@ -30,5 +30,5 @@ export const [useStore, { reset }] = create<UseStore>(set => ({
 	setStartLayout: (arg: Layout) => set(() => ({ startLayout: arg })),
 	recalculateLayout: (start: string, end: string) =>
 		set(state => ({ layout: recalculatePositions(state.layout, start, end) })),
-	reset: () => set(state => ({ layout: state.startLayout })),
+	resetLayout: () => set(state => ({ layout: state.startLayout })),
 }));

@@ -81,7 +81,7 @@ export type StoreCreatorItem<T> = (set: (action: SetStateAction<T>) => void) => 
 export type StoreCreator<T> = StoreCreatorItem<T> | [StoreCreatorItem<T>, string, T];
 export type SubscribeCallback<T> = (arg: T) => void;
 export type CreateReturn<T> = [() => T, T];
-export type WithInternal = { reset: () => void };
+export type WithInternal = { resetLayout: () => void };
 
 export interface Store<T> {
 	getState: () => T;
