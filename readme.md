@@ -4,7 +4,7 @@ your regular grid container. Pass it a grid className and enjoy smooth drag-n-dr
 
 API:
 
-index.ts exports two entities: `DragContainer` which is wrapper itself.
+`index.ts` exports two entities: `DragContainer` which is wrapper itself.
 `DragContainer` takes one required prop `className` (grid container class name) and two optional ones:
  - `config` - saved on server or in any other way grid items layout (`Layout` type)
  - and `updateConfig` function, which, if passed, fired with every drag to save current config. 
