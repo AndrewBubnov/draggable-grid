@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef } from 'react';
-import { DragStatus, Layout } from '../types';
+import { useCallback, useLayoutEffect, useRef } from 'react';
+import { DragStatus, Layout, Tiles } from '../types';
 import { getInitialLayout } from '../utils/getInitialLayout';
 import { GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN } from '../constants';
 import { getComputedParam } from '../utils/getComputedParam';
@@ -16,12 +16,11 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 		setRowHeight,
 		columnWidth,
 		setColumnWidth,
-		tiles,
-		setTiles,
 		setStoredConfig,
 	} = useStore();
 
 	const ref = useRef<HTMLDivElement>(null);
+	const tiles = useRef<Tiles>({ start: '', end: '' });
 
 	useLayoutEffect(() => {
 		if (!ref.current) return;
@@ -39,7 +38,7 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 		const initLayout = getInitialLayout(childCoords);
 		setStartLayout(initLayout);
 		setLayout(initLayout);
-	}, []);
+	}, [setLayout, setStartLayout]);
 
 	useLayoutEffect(() => {
 		if (!ref.current) return;
@@ -58,7 +57,7 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 		observer.observe(current);
 
 		return () => observer.unobserve(current);
-	}, []);
+	}, [setColumnWidth, setRowHeight]);
 
 	useLayoutEffect(() => {
 		if (config && Object.keys(config).length) {
@@ -67,23 +66,26 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 		}
 	}, [config, setLayout, setStoredConfig]);
 
-	const dragHandlers = (element: string, status: DragStatus) => {
-		if (status === DragStatus.CANCEL) {
-			setTiles({ start: '', end: '' });
-		}
-		if (status === DragStatus.START) {
-			setTiles({ ...tiles, start: element });
-		}
-		if (status === DragStatus.END && tiles.start !== element) {
-			setTiles({ ...tiles, end: element });
-		}
-		const { start, end } = tiles;
-		if (start && end) {
-			const newLayout = recalculatePositions(layout, start, end);
-			setLayout(newLayout);
-			if (updateConfig) updateConfig(newLayout);
-		}
-	};
+	const dragHandlers = useCallback(
+		(element: string, status: DragStatus) => {
+			if (status === DragStatus.CANCEL) {
+				tiles.current = { start: '', end: '' };
+			}
+			if (status === DragStatus.START) {
+				tiles.current = { ...tiles.current, start: element };
+			}
+			if (status === DragStatus.END && tiles.current.start !== element) {
+				tiles.current = { ...tiles.current, end: element };
+			}
+			const { start, end } = tiles.current;
+			if (start && end) {
+				const newLayout = recalculatePositions(layout, start, end);
+				setLayout(newLayout);
+				if (updateConfig) updateConfig(newLayout);
+			}
+		},
+		[layout, setLayout, updateConfig]
+	);
 
 	return { layout, startLayout, dragHandlers, columnWidth, rowHeight, ref };
 };
