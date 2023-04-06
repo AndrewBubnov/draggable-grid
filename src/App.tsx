@@ -1,20 +1,9 @@
 import styles from './App.module.css';
-import { Layout } from './types';
-import { useEffect, useState } from 'react';
 import { DragContainer, resetConfig } from '../index';
-import { getAsyncConfig } from './utils/getAsyncConfig';
-import { updateConfig } from './utils/updateConfig';
+import { useUpdate } from './hooks/useUpdate';
 
 const App = () => {
-	const [config, setConfig] = useState<Layout | undefined>();
-
-	useEffect(() => {
-		(async function () {
-			const layout = await getAsyncConfig();
-			setConfig(layout);
-		})();
-	}, []);
-
+	const [config, updateConfig] = useUpdate();
 	return (
 		<div className={styles.wrapper}>
 			<button onClick={resetConfig} className={styles.button}>
