@@ -6,3 +6,5 @@ export const TEMPLATE_ROWS = 'grid-template-rows';
 export const COLUMN_SPAN = 'grid-column-end';
 export const ROW_SPAN = 'grid-row-end';
 export const AUTO = 'auto';
+export const TRANSITION_DURATION = 300;
+export const DURATION_VARIABLE = '--duration';

@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { DragStatus, Layout } from '../types';
 import { getInitialLayout } from '../utils/getInitialLayout';
-import { GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN } from '../constants';
+import { GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN, TRANSITION_DURATION } from '../constants';
 import { getComputedParam } from '../utils/getComputedParam';
 import { useStore } from '../store';
 import { recalculatePositions } from '../utils/recalculatePositions';
@@ -71,9 +71,7 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 
 	const updateIds = useCallback((id: string, status: DragStatus) => {
 		if (!reorderAllowed.current) return;
-		if (status === DragStatus.START) {
-			setStartId(id);
-		}
+		if (status === DragStatus.START) setStartId(id);
 		if (status === DragStatus.END) setEndId(id);
 		if (status === DragStatus.CANCEL) {
 			setStartId('');
@@ -83,13 +81,17 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 
 	useLayoutEffect(() => {
 		if (!reorderAllowed.current) return;
+
 		if (startId && endId && startId !== endId) {
 			reorderAllowed.current = false;
 			const newLayout = recalculatePositions(layout, startId, endId);
 			setLayout(newLayout);
 			if (updateConfig) updateConfig(newLayout);
+			setTimeout(() => {
+				reorderAllowed.current = true;
+			}, TRANSITION_DURATION);
 		}
 	}, [endId, layout, setLayout, startId, updateConfig]);
 
-	return { layout, startLayout, columnWidth, rowHeight, ref, updateIds, reorderAllowed };
+	return { layout, startLayout, columnWidth, rowHeight, ref, updateIds };
 };

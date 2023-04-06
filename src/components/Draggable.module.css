@@ -1,11 +1,12 @@
 root {
 	--delta-x: '';
 	--delta-y: '';
+	--duration: '';
 }
 
 .tile {
 	transform: translate(var(--delta-x), var(--delta-y));
-	transition: transform 0.3s;
+	transition: transform var(--duration) ease-in;
 }
 
 .visible {

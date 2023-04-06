@@ -4,10 +4,7 @@ import { DragContainerProps } from '../types';
 import { useLayout } from '../hooks/useLayout';
 
 export const DragContainer = ({ children, className, config, updateConfig }: DragContainerProps) => {
-	const { layout, startLayout, columnWidth, rowHeight, ref, updateIds, reorderAllowed } = useLayout(
-		config,
-		updateConfig
-	);
+	const { layout, startLayout, columnWidth, rowHeight, ref, updateIds } = useLayout(config, updateConfig);
 
 	return (
 		<div className={className} ref={ref}>
@@ -19,7 +16,6 @@ export const DragContainer = ({ children, className, config, updateConfig }: Dra
 						columnWidth={columnWidth}
 						rowHeight={rowHeight}
 						updateIds={updateIds}
-						transitionRef={reorderAllowed}
 					>
 						{child}
 					</Draggable>

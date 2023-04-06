@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { DELTA_X, DELTA_Y } from '../constants';
+import { DELTA_X, DELTA_Y, DURATION_VARIABLE, TRANSITION_DURATION } from '../constants';
 import { Initial, Location, UseRenderStyle, UseRenderStyleReturn } from '../types';
 
 export const useRenderStyle = ({
@@ -22,6 +22,7 @@ export const useRenderStyle = ({
 		return {
 			[DELTA_X]: `${(currentColumn - startColumn) * columnWidth}px`,
 			[DELTA_Y]: `${(currentRow - startRow) * rowHeight}px`,
+			[DURATION_VARIABLE]: `${TRANSITION_DURATION}ms`,
 		};
-	}, [childrenStyle, columnWidth, rowHeight, initial]);
+	}, [initial, childrenStyle, id, columnWidth, rowHeight]);
 };

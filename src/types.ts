@@ -39,7 +39,6 @@ export interface DraggableProps {
 	columnWidth: number;
 	rowHeight: number;
 	updateIds(arg: string, status: DragStatus): void;
-	transitionRef: MutableRefObject<boolean>;
 }
 
 export enum DragStatus {

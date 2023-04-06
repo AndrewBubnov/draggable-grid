@@ -10,7 +10,6 @@ export const Draggable = ({
 	columnWidth,
 	rowHeight,
 	updateIds,
-	transitionRef,
 }: DraggableProps) => {
 	const firstId = useId();
 	const id = useRef(firstId);
@@ -28,6 +27,7 @@ export const Draggable = ({
 	const dragOverHandler = (e: DragEvent<HTMLDivElement>) => {
 		e.preventDefault();
 		updateIds(id.current, DragStatus.END);
+		console.log('id.current = ', id.current);
 	};
 
 	const dragStartHandler = () => {
@@ -40,10 +40,6 @@ export const Draggable = ({
 		setVisible(true);
 	};
 
-	const transitionEndHandler = () => {
-		transitionRef.current = true;
-	};
-
 	const visibilityClass = visible ? styles.visible : styles.invisible;
 
 	return cloneElement(children, {
@@ -54,7 +50,6 @@ export const Draggable = ({
 		onDragOver: dragOverHandler,
 		onDragStart: dragStartHandler,
 		onDragEnd: dragEndHandler,
-		onTransitionEnd: transitionEndHandler,
 		id: id.current,
 	});
 };
