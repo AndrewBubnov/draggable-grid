@@ -1,4 +1,4 @@
-import { cloneElement, useRef, DragEvent, useId } from 'react';
+import { cloneElement, useRef, DragEvent, useId, useState } from 'react';
 import { DraggableProps, DragStatus } from '../types';
 import { useRenderStyle } from '../hooks/useRenderStyle';
 import styles from './Draggable.module.css';
@@ -15,6 +15,7 @@ export const Draggable = ({
 	const firstId = useId();
 	const id = useRef(firstId);
 	const ref = useRef<HTMLDivElement>(null);
+	const [visible, setVisible] = useState<boolean>(true);
 
 	const renderStyle = useRenderStyle({
 		startLayout,
@@ -29,18 +30,26 @@ export const Draggable = ({
 		updateIds(id.current, DragStatus.END);
 	};
 
-	const dragStartHandler = () => updateIds(id.current, DragStatus.START);
+	const dragStartHandler = () => {
+		updateIds(id.current, DragStatus.START);
+		setVisible(false);
+	};
 
-	const dragEndHandler = () => updateIds(id.current, DragStatus.CANCEL);
+	const dragEndHandler = () => {
+		updateIds(id.current, DragStatus.CANCEL);
+		setVisible(true);
+	};
 
 	const transitionEndHandler = () => {
 		transitionRef.current = true;
 	};
 
+	const visibilityClass = visible ? styles.visible : styles.invisible;
+
 	return cloneElement(children, {
 		ref,
 		draggable: true,
-		className: `${styles.tile} ${children.props.className}`,
+		className: `${styles.tile} ${visibilityClass} ${children.props.className}`,
 		style: renderStyle,
 		onDragOver: dragOverHandler,
 		onDragStart: dragStartHandler,

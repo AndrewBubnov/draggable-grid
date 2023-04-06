@@ -7,3 +7,11 @@ root {
 	transform: translate(var(--delta-x), var(--delta-y));
 	transition: transform 0.3s;
 }
+
+.visible {
+	opacity: 1;
+}
+
+.invisible {
+	opacity: 0.01;
+}
