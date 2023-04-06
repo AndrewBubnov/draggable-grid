@@ -39,6 +39,7 @@ const createStore = <T extends WithInternal>(storeCreator: StoreCreator<T>): Sto
 
 export const create = <T extends WithInternal>(storeCreator: StoreCreator<T>): CreateReturn<T> => {
 	const store = createStore(storeCreator);
+	// eslint-disable-next-line
 	const hook = (bound: Store<T>) => useStore(bound);
 	return [hook.bind(null, store), store.getState()];
 };
