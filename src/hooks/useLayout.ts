@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { DragStatus, Layout, Tiles } from '../types';
 import { getInitialLayout } from '../utils/getInitialLayout';
 import { GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN } from '../constants';
@@ -19,8 +19,12 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 		setStoredConfig,
 	} = useStore();
 
+	const [startId, setStartId] = useState<string>('');
+	const [endId, setEndId] = useState<string>('');
+
 	const ref = useRef<HTMLDivElement>(null);
 	const tiles = useRef<Tiles>({ start: '', end: '' });
+	const reorderAllowed = useRef(true);
 
 	useLayoutEffect(() => {
 		if (!ref.current) return;
@@ -78,6 +82,7 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 				tiles.current = { ...tiles.current, end: element };
 			}
 			const { start, end } = tiles.current;
+
 			if (start && end) {
 				const newLayout = recalculatePositions(layout, start, end);
 				setLayout(newLayout);
@@ -87,5 +92,29 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 		[layout, setLayout, updateConfig]
 	);
 
-	return { layout, startLayout, dragHandlers, columnWidth, rowHeight, ref };
+	const updateIds = useCallback(
+		(id: string, status: DragStatus) => {
+			if (!reorderAllowed.current) return;
+			if (status === DragStatus.START) {
+				setStartId(id);
+				dragHandlers(id, DragStatus.START);
+			}
+			if (status === DragStatus.END) setEndId(id);
+			if (status === DragStatus.CANCEL) {
+				setStartId('');
+				setEndId('');
+			}
+		},
+		[dragHandlers]
+	);
+
+	useLayoutEffect(() => {
+		if (!reorderAllowed.current) return;
+		if (startId && endId && startId !== endId) {
+			reorderAllowed.current = false;
+			dragHandlers(endId, DragStatus.END);
+		}
+	}, [dragHandlers, endId, startId]);
+
+	return { layout, startLayout, columnWidth, rowHeight, ref, updateIds, reorderAllowed };
 };

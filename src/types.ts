@@ -1,4 +1,4 @@
-import { ReactElement } from 'react';
+import { Dispatch, MutableRefObject, ReactElement } from 'react';
 import { DELTA_X, DELTA_Y } from './constants';
 
 export interface DragContainerProps {
@@ -38,7 +38,8 @@ export interface DraggableProps {
 	childrenStyle: Layout;
 	columnWidth: number;
 	rowHeight: number;
-	onDrag(el: string, status: DragStatus): void;
+	updateIds(arg: string, status: DragStatus): void;
+	transitionRef: MutableRefObject<boolean>;
 }
 
 export enum DragStatus {
