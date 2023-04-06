@@ -75,8 +75,6 @@ export enum Complex {
 	STRAIGHT = 'straight',
 }
 
-export type Tiles = { start: string; end: string };
-
 export type ObjectParam<S> = Partial<S>;
 export type FunctionalParam<S> = (arg: S) => Partial<S>;
 export type SetStateAction<S> = ObjectParam<S> | FunctionalParam<S>;

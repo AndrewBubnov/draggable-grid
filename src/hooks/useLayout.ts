@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import { DragStatus, Layout, Tiles } from '../types';
+import { DragStatus, Layout } from '../types';
 import { getInitialLayout } from '../utils/getInitialLayout';
 import { GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN } from '../constants';
 import { getComputedParam } from '../utils/getComputedParam';
@@ -23,7 +23,6 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 	const [endId, setEndId] = useState<string>('');
 
 	const ref = useRef<HTMLDivElement>(null);
-	const tiles = useRef<Tiles>({ start: '', end: '' });
 	const reorderAllowed = useRef(true);
 
 	useLayoutEffect(() => {
@@ -70,51 +69,27 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 		}
 	}, [config, setLayout, setStoredConfig]);
 
-	const dragHandlers = useCallback(
-		(element: string, status: DragStatus) => {
-			if (status === DragStatus.CANCEL) {
-				tiles.current = { start: '', end: '' };
-			}
-			if (status === DragStatus.START) {
-				tiles.current = { ...tiles.current, start: element };
-			}
-			if (status === DragStatus.END && tiles.current.start !== element) {
-				tiles.current = { ...tiles.current, end: element };
-			}
-			const { start, end } = tiles.current;
-
-			if (start && end) {
-				const newLayout = recalculatePositions(layout, start, end);
-				setLayout(newLayout);
-				if (updateConfig) updateConfig(newLayout);
-			}
-		},
-		[layout, setLayout, updateConfig]
-	);
-
-	const updateIds = useCallback(
-		(id: string, status: DragStatus) => {
-			if (!reorderAllowed.current) return;
-			if (status === DragStatus.START) {
-				setStartId(id);
-				dragHandlers(id, DragStatus.START);
-			}
-			if (status === DragStatus.END) setEndId(id);
-			if (status === DragStatus.CANCEL) {
-				setStartId('');
-				setEndId('');
-			}
-		},
-		[dragHandlers]
-	);
+	const updateIds = useCallback((id: string, status: DragStatus) => {
+		if (!reorderAllowed.current) return;
+		if (status === DragStatus.START) {
+			setStartId(id);
+		}
+		if (status === DragStatus.END) setEndId(id);
+		if (status === DragStatus.CANCEL) {
+			setStartId('');
+			setEndId('');
+		}
+	}, []);
 
 	useLayoutEffect(() => {
 		if (!reorderAllowed.current) return;
 		if (startId && endId && startId !== endId) {
 			reorderAllowed.current = false;
-			dragHandlers(endId, DragStatus.END);
+			const newLayout = recalculatePositions(layout, startId, endId);
+			setLayout(newLayout);
+			if (updateConfig) updateConfig(newLayout);
 		}
-	}, [dragHandlers, endId, startId]);
+	}, [endId, layout, setLayout, startId, updateConfig]);
 
 	return { layout, startLayout, columnWidth, rowHeight, ref, updateIds, reorderAllowed };
 };
