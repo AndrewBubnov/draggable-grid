@@ -27,7 +27,6 @@ export const Draggable = ({
 	const dragOverHandler = (e: DragEvent<HTMLDivElement>) => {
 		e.preventDefault();
 		updateIds(id.current, DragStatus.END);
-		console.log('id.current = ', id.current);
 	};
 
 	const dragStartHandler = () => {
