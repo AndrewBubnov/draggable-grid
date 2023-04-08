@@ -1,16 +1,9 @@
-import { cloneElement, useRef, DragEvent, useId, useState } from 'react';
+import { cloneElement, useRef, DragEvent, useId, useState, memo } from 'react';
 import { DraggableProps, DragStatus } from '../types';
 import { useRenderStyle } from '../hooks/useRenderStyle';
 import styles from './Draggable.module.css';
 
-export const Draggable = ({
-	children,
-	startLayout,
-	childrenStyle,
-	columnWidth,
-	rowHeight,
-	updateIds,
-}: DraggableProps) => {
+const Draggable = ({ children, startLayout, childrenStyle, columnWidth, rowHeight, updateIds }: DraggableProps) => {
 	const firstId = useId();
 	const id = useRef(firstId);
 	const ref = useRef<HTMLDivElement>(null);
@@ -52,3 +45,5 @@ export const Draggable = ({
 		id: id.current,
 	});
 };
+
+export default memo(Draggable);

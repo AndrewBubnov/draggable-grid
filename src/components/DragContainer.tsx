@@ -1,5 +1,5 @@
 import React, { Children } from 'react';
-import { Draggable } from './Draggable';
+import Draggable from './Draggable';
 import { DragContainerProps } from '../types';
 import { useLayout } from '../hooks/useLayout';
 
