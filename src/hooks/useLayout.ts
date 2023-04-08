@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import { DragStatus, Layout } from '../types';
 import { getInitLayout } from '../utils/getInitLayout';
 import { GAP, TEMPLATE_COLUMNS, TEMPLATE_ROWS } from '../constants';
@@ -20,9 +20,7 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 		setStoredConfig,
 	} = useStore();
 
-	const [startId, setStartId] = useState<string>('');
-	const [endId, setEndId] = useState<string>('');
-
+	const startId = useRef<string>('');
 	const ref = useRef<HTMLDivElement>(null);
 	const reorderAllowed = useRef(true);
 
@@ -59,27 +57,27 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 		setStoredConfig(config);
 	}, [config, setLayout, setStoredConfig]);
 
-	const updateIds = useCallback((id: string, status: DragStatus) => {
-		if (!reorderAllowed.current) return;
-		if (status === DragStatus.START) setStartId(id);
-		if (status === DragStatus.END) setEndId(id);
-		if (status === DragStatus.CANCEL) {
-			setStartId('');
-			setEndId('');
-		}
-	}, []);
-
-	useLayoutEffect(() => {
-		if (!reorderAllowed.current) return;
-
-		if (startId && endId && startId !== endId) {
-			reorderAllowed.current = false;
-			const newLayout = recalculatePositions(layout, startId, endId);
-			setLayout(newLayout);
-			if (updateConfig) updateConfig(newLayout);
-			delayedRefSwitch(reorderAllowed).then();
-		}
-	}, [endId, layout, setLayout, startId, updateConfig]);
+	const updateIds = useCallback(
+		(id: string, status: DragStatus) => {
+			if (!reorderAllowed.current) return;
+			if (status === DragStatus.START) {
+				startId.current = id;
+			}
+			if (status === DragStatus.END) {
+				if (startId && startId.current !== id) {
+					reorderAllowed.current = false;
+					const newLayout = recalculatePositions(layout, startId.current, id);
+					setLayout(newLayout);
+					if (updateConfig) updateConfig(newLayout);
+					delayedRefSwitch(reorderAllowed).then();
+				}
+			}
+			if (status === DragStatus.CANCEL) {
+				startId.current = '';
+			}
+		},
+		[layout, setLayout, startId, updateConfig]
+	);
 
 	return { layout, startLayout, columnWidth, rowHeight, ref, updateIds };
 };
