@@ -1,20 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Layout } from '../types';
-
-const getAsyncConfig = (): Promise<Layout | undefined> =>
-	new Promise(resolve =>
-		setTimeout(() => {
-			const stored = localStorage.getItem('layout');
-			resolve(stored ? (JSON.parse(stored) as Layout) : undefined);
-		}, 1000)
-	);
+import { delayed, getConfig } from '../utils/delayed';
 
 export const useUpdate = (): [Layout | undefined, (arg: Layout) => void] => {
 	const [config, setConfig] = useState<Layout | undefined>();
 
 	useEffect(() => {
 		(async function () {
-			const layout = await getAsyncConfig();
+			const layout = await delayed(getConfig, 1000);
 			setConfig(layout);
 		})();
 	}, []);

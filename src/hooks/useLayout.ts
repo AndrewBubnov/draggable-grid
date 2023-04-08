@@ -1,11 +1,11 @@
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { DragStatus, Layout } from '../types';
 import { getInitLayout } from '../utils/getInitLayout';
-import { GAP, TEMPLATE_COLUMNS, TEMPLATE_ROWS } from '../constants';
+import { GAP, TEMPLATE_COLUMNS, TEMPLATE_ROWS, TRANSITION_DURATION } from '../constants';
 import { useStore } from '../store';
 import { recalculatePositions } from '../utils/recalculatePositions';
 import { getChildrenCoords } from '../utils/getChildrenCoords';
-import { delayedRefSwitch } from '../utils/delayedRefSwitch';
+import { delayed, refSwitch } from '../utils/delayed';
 
 export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void) => {
 	const {
@@ -69,7 +69,7 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 					const newLayout = recalculatePositions(layout, startId.current, id);
 					setLayout(newLayout);
 					if (updateConfig) updateConfig(newLayout);
-					delayedRefSwitch(reorderAllowed).then();
+					delayed(refSwitch(reorderAllowed), TRANSITION_DURATION).then();
 				}
 			}
 			if (status === DragStatus.CANCEL) {
