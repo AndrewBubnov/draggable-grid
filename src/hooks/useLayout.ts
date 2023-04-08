@@ -76,7 +76,7 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 				startId.current = '';
 			}
 		},
-		[layout, setLayout, startId, updateConfig]
+		[layout, setLayout, updateConfig]
 	);
 
 	return { layout, startLayout, columnWidth, rowHeight, ref, updateIds };
