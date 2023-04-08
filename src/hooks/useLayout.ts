@@ -1,10 +1,10 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { DragStatus, Layout } from '../types';
-import { getInitialLayout } from '../utils/getInitialLayout';
-import { GAP, COLUMN_SPAN, TEMPLATE_COLUMNS, TEMPLATE_ROWS, ROW_SPAN, TRANSITION_DURATION } from '../constants';
-import { getComputedParam } from '../utils/getComputedParam';
+import { getInitLayout } from '../utils/getInitLayout';
+import { GAP, TEMPLATE_COLUMNS, TEMPLATE_ROWS, TRANSITION_DURATION } from '../constants';
 import { useStore } from '../store';
 import { recalculatePositions } from '../utils/recalculatePositions';
+import { getChildrenCoords } from '../utils/getChildrenCoords';
 
 export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void) => {
 	const {
@@ -27,18 +27,8 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 
 	useLayoutEffect(() => {
 		if (!ref.current) return;
-		const childCoords = Array.from(ref.current?.children || []).map(child => {
-			const computed = getComputedStyle(child);
-			const computedWidth = computed.getPropertyValue(COLUMN_SPAN);
-			const computedHeight = computed.getPropertyValue(ROW_SPAN);
-			return {
-				id: child.id,
-				coords: child.getBoundingClientRect(),
-				width: getComputedParam(computedWidth),
-				height: getComputedParam(computedHeight),
-			};
-		});
-		const initLayout = getInitialLayout(childCoords);
+		const childCoords = getChildrenCoords(ref.current);
+		const initLayout = getInitLayout(childCoords);
 		setStartLayout(initLayout);
 		setLayout(initLayout);
 	}, [setLayout, setStartLayout]);
