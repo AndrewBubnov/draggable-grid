@@ -1,10 +1,11 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { DragStatus, Layout } from '../types';
 import { getInitLayout } from '../utils/getInitLayout';
-import { GAP, TEMPLATE_COLUMNS, TEMPLATE_ROWS, TRANSITION_DURATION } from '../constants';
+import { GAP, TEMPLATE_COLUMNS, TEMPLATE_ROWS } from '../constants';
 import { useStore } from '../store';
 import { recalculatePositions } from '../utils/recalculatePositions';
 import { getChildrenCoords } from '../utils/getChildrenCoords';
+import { delayedRefSwitch } from '../utils/delayedRefSwitch';
 
 export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void) => {
 	const {
@@ -53,10 +54,9 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 	}, [setColumnWidth, setRowHeight]);
 
 	useLayoutEffect(() => {
-		if (config && Object.keys(config).length) {
-			setLayout(config);
-			setStoredConfig(config);
-		}
+		if (!config || !Object.keys(config).length) return;
+		setLayout(config);
+		setStoredConfig(config);
 	}, [config, setLayout, setStoredConfig]);
 
 	const updateIds = useCallback((id: string, status: DragStatus) => {
@@ -77,9 +77,7 @@ export const useLayout = (config?: Layout, updateConfig?: (arg: Layout) => void)
 			const newLayout = recalculatePositions(layout, startId, endId);
 			setLayout(newLayout);
 			if (updateConfig) updateConfig(newLayout);
-			setTimeout(() => {
-				reorderAllowed.current = true;
-			}, TRANSITION_DURATION);
+			delayedRefSwitch(reorderAllowed).then();
 		}
 	}, [endId, layout, setLayout, startId, updateConfig]);
 
