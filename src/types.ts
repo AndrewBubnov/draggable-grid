@@ -15,7 +15,7 @@ export enum Location {
 	HEIGHT = 'height',
 }
 
-interface LayoutItem {
+export interface LayoutItem {
 	[Location.ROW]: number;
 	[Location.COLUMN]: number;
 	[Location.WIDTH]: number;

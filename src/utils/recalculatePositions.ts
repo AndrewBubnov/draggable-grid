@@ -1,4 +1,4 @@
-import { Complex, Layout, Location } from '../types';
+import { Layout, LayoutItem, Location } from '../types';
 
 const prepare = (state: Layout, start: string, end: string) => {
 	const { width: startWidth, height: startHeight, row: startRow, column: startColumn } = state[start];
@@ -44,109 +44,133 @@ const prepare = (state: Layout, start: string, end: string) => {
 	};
 };
 
-const simple = (state: Layout, start: string, end: string): Layout => {
-	const { main, cross, size, startSize, endSize, startElement, endElement, keys } = prepare(state, start, end);
-
-	const containerElements = keys.filter(el => state[el][main] === state[end][main]);
-	if (state[start][cross] > state[end][cross])
-		return {
-			...state,
-			...containerElements.reduce((acc, el) => {
-				const { [el]: element } = state;
-				if (el === start) return { ...acc, [start]: { ...endElement, [size]: startSize } };
-				if (el === end) {
-					return {
-						...acc,
-						[end]: {
-							...startElement,
-							[cross]: startElement[cross] + startSize - endSize,
-							[size]: endSize,
-						},
-					};
-				}
-				if (element[cross] < endElement[cross] || element[cross] > startElement[cross]) {
-					return { ...acc, [el]: state[el] };
-				}
-				return { ...acc, [el]: { ...state[el], [cross]: element[cross] + startSize - endSize } };
-			}, {} as Layout),
-		};
-	return simple(state, end, start);
-};
-
 export const recalculatePositions = (state: Layout, start: string, end: string): Layout => {
-	const {
-		startWidth,
-		startHeight,
-		endWidth,
-		endHeight,
-		endRow,
-		endColumn,
-		isDifferentColumn,
-		isDifferentRow,
-		main,
-		cross,
-		size,
-		crossSize,
-		startElement,
-		endElement,
-		keys,
-	} = prepare(state, start, end);
+	const { main, cross, size, crossSize, startElement, endElement, keys } = prepare(state, start, end);
 
-	if (startElement[crossSize] < endElement[crossSize]) return state;
-
-	const diagonalEqual = () => ({ ...state, [start]: endElement, [end]: startElement });
-
-	const getTarget = (): [string[], boolean] => {
-		const startSquare = startWidth * startHeight;
-		const target = keys
-			.filter(
-				key =>
-					key !== start &&
-					state[key][Location.COLUMN] >= endColumn &&
-					state[key][Location.ROW] >= endRow &&
-					state[key][Location.COLUMN] <= endColumn + startWidth - endWidth &&
-					state[key][Location.ROW] <= endRow + startHeight - endHeight
-			)
-			.slice(0, startSquare / (endWidth * endHeight));
-		const targetSquare = target.reduce((acc, cur) => acc + state[cur][size] * state[cur][crossSize], 0);
-		const allowedSingle = (target.length === 1 && !isDifferentColumn) || (target.length === 1 && !isDifferentRow);
-		return [target, allowedSingle || targetSquare === startSquare];
+	const getBoxSize = (element: LayoutItem, array: string[][], boxCrossSize: number): number => {
+		const boxElements = array
+			.slice(element[cross] - 1, element[cross] + element[size] - 1)
+			.map(el => el.slice(element[main] - 1, element[main] + boxCrossSize - 1));
+		const boxElementsMap = boxElements.flat().reduce((acc, cur) => {
+			acc[cur] = acc[cur] ? acc[cur] + 1 : 1;
+			return acc;
+		}, {} as Record<string, number>);
+		const crossDiff = Object.keys(boxElementsMap).reduce(
+			(acc, cur) => acc + state[cur][Location.HEIGHT] * state[cur][Location.WIDTH] - boxElementsMap[cur],
+			0
+		);
+		if (crossDiff) return getBoxSize(element, array, boxCrossSize + crossDiff);
+		return boxCrossSize;
 	};
 
-	const complex = (direction: Complex) => {
-		const [target, allowed] = getTarget();
+	const getCommonBoxSize = (
+		startElement: LayoutItem,
+		endElement: LayoutItem,
+		array: string[][],
+		startBoxSize: number,
+		endBoxSize: number
+	): number => {
+		const startBoxCrossSize = getBoxSize(startElement, array, startBoxSize);
+		const endBoxCrossSize = getBoxSize(endElement, array, endBoxSize);
+		if (startBoxCrossSize !== endBoxCrossSize) {
+			const commonSize = Math.max(startBoxCrossSize, endBoxCrossSize);
+			return getCommonBoxSize(startElement, endElement, array, commonSize, commonSize);
+		}
+		return startBoxCrossSize;
+	};
 
-		if (!allowed) return state;
+	const getTarget = () => {
+		const maxColumn = Math.max(...keys.map(key => state[key][Location.COLUMN]));
+		const maxRow = Math.max(...keys.map(key => state[key][Location.ROW]));
+		const columnsArray = Array(maxColumn).fill('');
+		const rowsArray = Array(maxRow).fill('');
+		const array: string[][] = [];
 
-		let sumCounter = 0;
-		const isDiagonal = direction === Complex.DIAGONAL;
+		const mappedState = keys.reduce((acc, cur) => {
+			const current = state[cur];
+			const rows =
+				current[Location.HEIGHT] === 1
+					? [current[Location.ROW]]
+					: Array.from({ length: current[Location.HEIGHT] }, (_, i) => current[Location.ROW] + i);
+			const columns =
+				current[Location.WIDTH] === 1
+					? [current[Location.COLUMN]]
+					: Array.from({ length: current[Location.WIDTH] }, (_, i) => current[Location.COLUMN] + i);
+			acc[cur] = { rows, columns };
+			return acc;
+		}, {} as Record<string, { rows: number[]; columns: number[] }>);
+
+		rowsArray.forEach((row, i1) => {
+			const inner: string[] = [];
+			columnsArray.forEach((col, i2) => {
+				inner[i2] =
+					keys.find(
+						key => mappedState[key].columns.includes(i2 + 1) && mappedState[key].rows.includes(i1 + 1)
+					) || '';
+			});
+			array[i1] = inner;
+		});
+
+		const commonSize = getCommonBoxSize(
+			startElement,
+			endElement,
+			array,
+			startElement[crossSize],
+			endElement[crossSize]
+		);
+
+		const startKeys = array
+			.slice(startElement[cross] - 1, startElement[cross] + startElement[size] - 1)
+			.map(el => el.slice(startElement[main] - 1, startElement[main] + commonSize - 1))
+			.flat();
+
+		const endKeys = array
+			.slice(endElement[cross] - 1, endElement[cross] + endElement[size] - 1)
+			.map(el => el.slice(endElement[main] - 1, endElement[main] + commonSize - 1))
+			.flat();
+		return { startKeys: [...new Set(startKeys)], endKeys: [...new Set(endKeys)] };
+	};
+
+	const complex = (): Layout => {
+		const { main, cross, startElement, endElement } = prepare(state, start, end);
+		const { startKeys, endKeys } = getTarget();
+
 		return {
 			...state,
-			[start]: {
-				...endElement,
-				[Location.WIDTH]: startElement[Location.WIDTH],
-				[Location.HEIGHT]: startElement[Location.HEIGHT],
-			},
-			...target.reduce((acc, cur) => {
-				acc[cur] = isDiagonal
-					? { ...state[cur], [cross]: startElement[cross] + sumCounter, [main]: startElement[main] }
-					: { ...state[cur], [cross]: startElement[cross], [main]: startElement[main] + sumCounter };
-				sumCounter = isDiagonal ? sumCounter + state[cur][size] : sumCounter + state[cur][crossSize];
+			...startKeys.reduce((acc, cur) => {
+				acc[cur] = {
+					...state[cur],
+					[cross]: endElement[cross] + state[cur][cross],
+					[main]: endElement[main] - startElement[main] + state[cur][main],
+				};
+				return acc;
+			}, {} as Layout),
+			...endKeys.reduce((acc, cur) => {
+				acc[cur] = {
+					...state[cur],
+					[cross]: startElement[cross] - endElement[cross] + state[cur][cross],
+					[main]: startElement[main] - endElement[main] + state[cur][main],
+				};
 				return acc;
 			}, {} as Layout),
 		};
 	};
 
-	const isComplexDiagonal = startElement[size] > endElement[size] && startElement[main] !== endElement[main];
+	if (startElement[size] === endElement[size] && startElement[crossSize] === endElement[crossSize]) {
+		return {
+			...state,
+			[start]: {
+				...startElement,
+				[main]: endElement[main],
+				[cross]: endElement[cross],
+			},
+			[end]: {
+				...endElement,
+				[main]: startElement[main],
+				[cross]: startElement[cross],
+			},
+		};
+	}
 
-	if (isComplexDiagonal) return complex(Complex.DIAGONAL);
-
-	if (startElement[crossSize] > endElement[crossSize]) return complex(Complex.STRAIGHT);
-
-	const isDiagonalEqual =
-		isDifferentColumn && isDifferentColumn && startWidth === endWidth && startHeight === endHeight;
-
-	if (isDiagonalEqual) return diagonalEqual();
-
-	return simple(state, end, start);
+	return complex();
 };
