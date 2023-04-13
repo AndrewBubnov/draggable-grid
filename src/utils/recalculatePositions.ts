@@ -44,8 +44,53 @@ const prepare = (state: Layout, start: string, end: string) => {
 	};
 };
 
+const simple = (state: Layout, start: string, end: string): Layout => {
+	const { main, cross, size, startSize, endSize, startElement, endElement, keys } = prepare(state, start, end);
+
+	const containerElements = keys.filter(el => state[el][main] === state[end][main]);
+	if (state[start][cross] > state[end][cross])
+		return {
+			...state,
+			...containerElements.reduce((acc, el) => {
+				const { [el]: element } = state;
+				if (el === start) return { ...acc, [start]: { ...endElement, [size]: startSize } };
+				if (el === end) {
+					return {
+						...acc,
+						[end]: {
+							...startElement,
+							[cross]: startElement[cross] + startSize - endSize,
+							[size]: endSize,
+						},
+					};
+				}
+				if (element[cross] < endElement[cross] || element[cross] > startElement[cross]) {
+					return { ...acc, [el]: state[el] };
+				}
+				return { ...acc, [el]: { ...state[el], [cross]: element[cross] + startSize - endSize } };
+			}, {} as Layout),
+		};
+	return simple(state, end, start);
+};
+
 export const recalculatePositions = (state: Layout, start: string, end: string): Layout => {
-	const { main, cross, size, crossSize, startElement, endElement, keys } = prepare(state, start, end);
+	const {
+		main,
+		cross,
+		size,
+		crossSize,
+		startElement,
+		endElement,
+		keys,
+		isDifferentColumn,
+		startWidth,
+		endWidth,
+		startHeight,
+		endHeight,
+	} = prepare(state, start, end);
+
+	const maxColumn = Math.max(...keys.map(key => state[key][Location.COLUMN]));
+	const maxRow = Math.max(...keys.map(key => state[key][Location.ROW]));
 
 	const getBoxSize = (element: LayoutItem, array: string[][], boxCrossSize: number): number => {
 		const boxElements = array
@@ -87,7 +132,7 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 		return startBoxCrossSize;
 	};
 
-	const createIdArray = ({ maxColumn, maxRow }: { maxColumn: number; maxRow: number }) => {
+	const createIdArray = () => {
 		const columnsArray = Array(maxColumn).fill('');
 		const rowsArray = Array(maxRow).fill('');
 
@@ -116,10 +161,7 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 	};
 
 	const getTarget = () => {
-		const maxColumn = Math.max(...keys.map(key => state[key][Location.COLUMN]));
-		const maxRow = Math.max(...keys.map(key => state[key][Location.ROW]));
-
-		const idArray = createIdArray({ maxColumn, maxRow });
+		const idArray = createIdArray();
 
 		const commonSize = getCommonBoxSize(
 			startElement,
@@ -160,21 +202,22 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 		};
 	};
 
-	if (startElement[size] === endElement[size] && startElement[crossSize] === endElement[crossSize]) {
-		return {
-			...state,
-			[start]: {
-				...startElement,
-				[main]: endElement[main],
-				[cross]: endElement[cross],
-			},
-			[end]: {
-				...endElement,
-				[main]: startElement[main],
-				[cross]: startElement[cross],
-			},
-		};
-	}
+	const moveImpossible =
+		(main === 'row' &&
+			endElement[Location.ROW] === maxRow &&
+			startElement[Location.HEIGHT] > endElement[Location.HEIGHT]) ||
+		(main === 'column' &&
+			endElement[Location.COLUMN] === maxColumn &&
+			startElement[Location.WIDTH] > endElement[Location.WIDTH]);
+
+	if (moveImpossible) return state;
+
+	const diagonalEqual = () => ({ ...state, [start]: endElement, [end]: startElement });
+
+	if (isDifferentColumn && isDifferentColumn && startWidth === endWidth && startHeight === endHeight)
+		return diagonalEqual();
+
+	if (startElement[crossSize] === endElement[crossSize]) return simple(state, start, end);
 
 	return complex();
 };
