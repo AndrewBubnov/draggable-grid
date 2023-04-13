@@ -206,9 +206,11 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 		(main === 'row' &&
 			endElement[Location.ROW] === maxRow &&
 			startElement[Location.HEIGHT] > endElement[Location.HEIGHT]) ||
+		(startElement[Location.ROW] === maxRow && endElement[Location.HEIGHT] > startElement[Location.HEIGHT]) ||
 		(main === 'column' &&
 			endElement[Location.COLUMN] === maxColumn &&
-			startElement[Location.WIDTH] > endElement[Location.WIDTH]);
+			startElement[Location.WIDTH] > endElement[Location.WIDTH]) ||
+		(startElement[Location.COLUMN] === maxColumn && endElement[Location.WIDTH] > startElement[Location.WIDTH]);
 
 	if (moveImpossible) return state;
 
