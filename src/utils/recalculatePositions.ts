@@ -204,13 +204,11 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 
 	const moveImpossible =
 		(main === 'row' &&
-			endElement[Location.ROW] === maxRow &&
-			startElement[Location.HEIGHT] > endElement[Location.HEIGHT]) ||
-		(startElement[Location.ROW] === maxRow && endElement[Location.HEIGHT] > startElement[Location.HEIGHT]) ||
+			((endElement[main] === maxRow && startElement[crossSize] > endElement[crossSize]) ||
+				(startElement[main] === maxRow && endElement[crossSize] > startElement[crossSize]))) ||
 		(main === 'column' &&
-			endElement[Location.COLUMN] === maxColumn &&
-			startElement[Location.WIDTH] > endElement[Location.WIDTH]) ||
-		(startElement[Location.COLUMN] === maxColumn && endElement[Location.WIDTH] > startElement[Location.WIDTH]);
+			((endElement[main] === maxColumn && startElement[crossSize] > endElement[crossSize]) ||
+				(startElement[main] === maxColumn && endElement[crossSize] > startElement[crossSize])));
 
 	if (moveImpossible) return state;
 
