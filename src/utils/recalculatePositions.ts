@@ -144,7 +144,7 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 			...startKeys.reduce((acc, cur) => {
 				acc[cur] = {
 					...state[cur],
-					[cross]: endElement[cross] + state[cur][cross],
+					[cross]: endElement[cross] - startElement[cross] + state[cur][cross],
 					[main]: endElement[main] - startElement[main] + state[cur][main],
 				};
 				return acc;
