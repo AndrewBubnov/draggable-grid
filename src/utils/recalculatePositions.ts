@@ -63,6 +63,14 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 		return boxCrossSize;
 	};
 
+	const getKeys = (array: string[][], element: LayoutItem, commonSize: number) => {
+		const allKeys = array
+			.slice(element[cross] - 1, element[cross] + element[size] - 1)
+			.map(el => el.slice(element[main] - 1, element[main] + commonSize - 1))
+			.flat();
+		return [...new Set(allKeys)];
+	};
+
 	const getCommonBoxSize = (
 		startElement: LayoutItem,
 		endElement: LayoutItem,
@@ -79,12 +87,9 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 		return startBoxCrossSize;
 	};
 
-	const getTarget = () => {
-		const maxColumn = Math.max(...keys.map(key => state[key][Location.COLUMN]));
-		const maxRow = Math.max(...keys.map(key => state[key][Location.ROW]));
+	const createIdArray = ({ maxColumn, maxRow }: { maxColumn: number; maxRow: number }) => {
 		const columnsArray = Array(maxColumn).fill('');
 		const rowsArray = Array(maxRow).fill('');
-		const array: string[][] = [];
 
 		const mappedState = keys.reduce((acc, cur) => {
 			const current = state[cur];
@@ -100,35 +105,34 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 			return acc;
 		}, {} as Record<string, { rows: number[]; columns: number[] }>);
 
-		rowsArray.forEach((row, i1) => {
-			const inner: string[] = [];
-			columnsArray.forEach((col, i2) => {
-				inner[i2] =
+		return rowsArray.map((row, i1) =>
+			columnsArray.map(
+				(col, i2) =>
 					keys.find(
 						key => mappedState[key].columns.includes(i2 + 1) && mappedState[key].rows.includes(i1 + 1)
-					) || '';
-			});
-			array[i1] = inner;
-		});
+					) || ''
+			)
+		);
+	};
+
+	const getTarget = () => {
+		const maxColumn = Math.max(...keys.map(key => state[key][Location.COLUMN]));
+		const maxRow = Math.max(...keys.map(key => state[key][Location.ROW]));
+
+		const idArray = createIdArray({ maxColumn, maxRow });
 
 		const commonSize = getCommonBoxSize(
 			startElement,
 			endElement,
-			array,
+			idArray,
 			startElement[crossSize],
 			endElement[crossSize]
 		);
 
-		const startKeys = array
-			.slice(startElement[cross] - 1, startElement[cross] + startElement[size] - 1)
-			.map(el => el.slice(startElement[main] - 1, startElement[main] + commonSize - 1))
-			.flat();
+		const startKeys = getKeys(idArray, startElement, commonSize);
+		const endKeys = getKeys(idArray, endElement, commonSize);
 
-		const endKeys = array
-			.slice(endElement[cross] - 1, endElement[cross] + endElement[size] - 1)
-			.map(el => el.slice(endElement[main] - 1, endElement[main] + commonSize - 1))
-			.flat();
-		return { startKeys: [...new Set(startKeys)], endKeys: [...new Set(endKeys)] };
+		return { startKeys, endKeys };
 	};
 
 	const complex = (): Layout => {
