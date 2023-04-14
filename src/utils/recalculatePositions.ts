@@ -13,7 +13,9 @@ const prepare = (state: Layout, start: string, end: string) => {
 		isHorizontal = Math.abs(startColumn - endColumn) > Math.abs(startWidth - endWidth) && isDifferentColumn;
 	}
 
-	const [main, cross] = isHorizontal ? [Location.ROW, Location.COLUMN] : [Location.COLUMN, Location.ROW];
+	const [main, cross] = isHorizontal
+		? ([Location.ROW, Location.COLUMN] as const)
+		: ([Location.COLUMN, Location.ROW] as const);
 
 	const [size, startSize, endSize, crossSize] = isHorizontal
 		? [Location.WIDTH, startWidth, endWidth, Location.HEIGHT]
@@ -137,23 +139,25 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 
 		const mappedState = keys.reduce((acc, cur) => {
 			const current = state[cur];
-			const rows =
+			const row =
 				current[Location.HEIGHT] === 1
 					? [current[Location.ROW]]
 					: Array.from({ length: current[Location.HEIGHT] }, (_, i) => current[Location.ROW] + i);
-			const columns =
+			const column =
 				current[Location.WIDTH] === 1
 					? [current[Location.COLUMN]]
 					: Array.from({ length: current[Location.WIDTH] }, (_, i) => current[Location.COLUMN] + i);
-			acc[cur] = { rows, columns };
+			acc[cur] = { row, column };
 			return acc;
-		}, {} as Record<string, { rows: number[]; columns: number[] }>);
+		}, {} as Record<string, { row: number[]; column: number[] }>);
 
 		return rowsArray.map((row, i1) =>
 			columnsArray.map(
 				(col, i2) =>
 					keys.find(
-						key => mappedState[key].columns.includes(i2 + 1) && mappedState[key].rows.includes(i1 + 1)
+						key =>
+							mappedState[key][`${main}`].includes(i2 + 1) &&
+							mappedState[key][`${cross}`].includes(i1 + 1)
 					) || ''
 			)
 		);
