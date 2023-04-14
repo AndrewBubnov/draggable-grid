@@ -108,12 +108,11 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 		return boxCrossSize;
 	};
 
-	const getKeys = (array: string[][], element: LayoutItem, commonSize: number) => {
-		const allKeys = array
-			.slice(element[cross] - 1, element[cross] + element[size] - 1)
-			.map(el => el.slice(element[main] - 1, element[main] + commonSize - 1))
-			.flat();
-		return [...new Set(allKeys)];
+	const getKeys = (array: string[][], element: LayoutItem, commonSize: number): [string[], number] => {
+		const crossLines = array.slice(element[cross] - 1, element[cross] + element[size] - 1);
+
+		const rawKeys = crossLines.map(el => el.slice(element[main] - 1, element[main] + commonSize - 1)).flat();
+		return [[...new Set(rawKeys)], crossLines.length];
 	};
 
 	const getCommonBoxSize = (
@@ -171,16 +170,36 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 			endElement[crossSize]
 		);
 
-		const startKeys = getKeys(idArray, startElement, commonSize);
-		const endKeys = getKeys(idArray, endElement, commonSize);
+		const [startKeys, startCrossLines] = getKeys(idArray, startElement, commonSize);
+		const [endKeys, endCrossLines] = getKeys(idArray, endElement, commonSize);
 
-		return { startKeys, endKeys };
+		return { startKeys, endKeys, startCrossLines, endCrossLines };
 	};
 
 	const complex = (): Layout => {
 		const { main, cross, startElement, endElement } = prepare(state, start, end);
-		const { startKeys, endKeys } = getTarget();
-
+		const { startKeys, endKeys, startCrossLines, endCrossLines } = getTarget();
+		if (state[start][cross] < state[end][cross]) {
+			return {
+				...state,
+				...startKeys.reduce((acc, cur) => {
+					acc[cur] = {
+						...state[cur],
+						[cross]: endCrossLines + state[cur][cross],
+						[main]: endElement[main] - startElement[main] + state[cur][main],
+					};
+					return acc;
+				}, {} as Layout),
+				...endKeys.reduce((acc, cur) => {
+					acc[cur] = {
+						...state[cur],
+						[cross]: startElement[cross] - endElement[cross] + state[cur][cross],
+						[main]: startElement[main] - endElement[main] + state[cur][main],
+					};
+					return acc;
+				}, {} as Layout),
+			};
+		}
 		return {
 			...state,
 			...startKeys.reduce((acc, cur) => {
@@ -194,7 +213,7 @@ export const recalculatePositions = (state: Layout, start: string, end: string):
 			...endKeys.reduce((acc, cur) => {
 				acc[cur] = {
 					...state[cur],
-					[cross]: startElement[cross] - endElement[cross] + state[cur][cross],
+					[cross]: startCrossLines + state[cur][cross],
 					[main]: startElement[main] - endElement[main] + state[cur][main],
 				};
 				return acc;
